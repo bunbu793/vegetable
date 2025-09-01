@@ -30,6 +30,7 @@ if submitted:
     profile_path = f"user_profiles/{username}.json"
 
     if os.path.exists(profile_path):
+        os.makedirs("user_profiles", exist_ok=True)
         with open(profile_path, "r", encoding="utf-8") as f:
             profile = json.load(f)
             if profile.get("password") == password:
