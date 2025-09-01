@@ -20,4 +20,4 @@ for title_name in 称号データ.keys():
         # 未獲得の称号（グレー表示）
         st.subheader("🔒 ???")
         st.markdown("条件未達成の称号です")
-        st.image("assets/images/titles/locked.png", width=150)
+        st.image("C:\Users\kanra\Desktop\python\vegetable\vege_rpg_app\assets\images\titles\locked.png", width=150)
