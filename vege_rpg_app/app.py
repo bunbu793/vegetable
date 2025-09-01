@@ -9,28 +9,6 @@ from modules.mission import generate_mission
 
 st.write("まずはルール説明を読もう！左上にある≫マークをクリックしてメニューを開いてね！そしたら上から3番目の「Rules」を選んでね！")
 
-# 🔧 背景切り替え関数
-def set_background(theme):
-    bg_path = {
-        "ノーマル": "assets/images/white_bg.jpg",
-        "ホラー": "assets/images/horror_bg.jpg",
-        "ファンタジー": "assets/images/fantasy_bg.jpg",
-        "和風": "assets/images/japanese_bg.jpg"
-    }.get(theme)
-
-    if bg_path:
-        st.markdown(f"""
-        <style>
-        html, body, .stApp {{
-            background-image: url("{bg_path}");
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            background-color: black;
-        }}
-        </style>
-        """, unsafe_allow_html=True)
-
 st.set_page_config(page_title="野菜ゾンビ診断", page_icon="🧟‍♂️")
 
 # セッションステート初期化
