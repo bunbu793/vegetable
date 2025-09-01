@@ -20,7 +20,7 @@ for title_name in 称号データ.keys():
         # 未獲得の称号（グレー表示）
         st.subheader("🔒 ???")
         st.markdown("条件未達成の称号です")
-        st.image("assets/images/titles/locked.png", width=150)
+        
         import os
         image_path = "assets/images/titles/locked.png"
         if os.path.exists(image_path):
