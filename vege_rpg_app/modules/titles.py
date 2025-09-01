@@ -1,3 +1,5 @@
+import streamlit as st
+
 # 称号一覧と説明
 称号データ = {
     "冷蔵庫の救世主": {
@@ -45,5 +47,8 @@ def check_titles(mission_history, existing_titles=None):
     # 称号条件④：5種類以上の野菜を使った
     if len(unique_veggies) >= 5 and "野菜語り部" not in existing_titles:
         new_titles.append("野菜語り部")
+
+    if st.session_state.get("viewed_rules") and "ルールマスター" not in existing_titles:
+        new_titles.append("ルールマスター")
 
     return new_titles

@@ -5,20 +5,35 @@ from PIL import Image
 import os
 import json
 from modules.titles import 称号データ, get_title_info
+from modules.mission import generate_mission
 
+st.write("まずはルール説明を読もう！左上にある≫マークをクリックしてメニューを開いてね！そしたら上から3番目の「Rules」を選んでね！")
 
+# 🔧 背景切り替え関数
+def set_background(theme):
+    bg_path = {
+        "ノーマル": "assets/images/white_bg.jpg",
+        "ホラー": "assets/images/horror_bg.jpg",
+        "ファンタジー": "assets/images/fantasy_bg.jpg",
+        "和風": "assets/images/japanese_bg.jpg"
+    }.get(theme)
+
+    if bg_path:
+        st.markdown(f"""
+        <style>
+        html, body, .stApp {{
+            background-image: url("{bg_path}");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-color: black;
+        }}
+        </style>
+        """, unsafe_allow_html=True)
 
 st.set_page_config(page_title="野菜ゾンビ診断", page_icon="🧟‍♂️")
 
-theme = st.selectbox("テーマを選択", ["ホラー", "ファンタジー", "和風"])
-
-if theme == "ホラー":
-    st.markdown("<style>body { background-color: #1a1a1a; color: red; }</style>", unsafe_allow_html=True)
-elif theme == "ファンタジー":
-    st.markdown("<style>body { background-color: #f0f8ff; color: purple; }</style>", unsafe_allow_html=True)
-elif theme == "和風":
-    st.markdown("<style>body { background-color: #fffaf0; color: darkgreen; }</style>", unsafe_allow_html=True)
-
+# セッションステート初期化
 st.title("🧟‍♂️ 野菜ゾンビ度診断アプリ")
 
 with st.form("login_form"):
@@ -99,16 +114,29 @@ if image_bytes:
 
 
     from modules.mission import generate_mission
+
+if image_bytes:
     vegetable_name = st.selectbox(
     "撮影した野菜を選んでください",
     ["にんじん", "トマト", "キャベツ", "ピーマン", "レタス"]
 )
+    st.session_state["vegetable_name"] = vegetable_name
+
+    mission = generate_mission(vegetable_name, score)
 
     mission = generate_mission(vegetable_name, score)
 
     st.subheader("🎯 今日のミッション")
     st.markdown(mission["mission"])     
     st.session_state["current_mission"] = mission
+
+    # 📸 証拠画像提出UI（ここに入れる！）
+    proof_method = st.radio("証拠画像の取得方法", ["カメラで撮影", "ファイルをアップロード"])
+    proof_image = None
+    if proof_method == "カメラで撮影":
+        proof_image = st.camera_input("証拠写真を撮影してください")
+    else:
+        proof_image = st.file_uploader("証拠写真をアップロードしてください", type=["png", "jpg", "jpeg"])
 
 from modules.titles import check_titles, get_title_info
 
@@ -125,6 +153,16 @@ if st.button("✅ ミッション達成！"):
     st.success("🎉 ミッション完了！ゾンビ野菜を救いました！")
     st.session_state["missions_completed"].append(mission)
     st.balloons()
+
+    # 📸 証拠画像保存処理（ここを追加！）
+    if proof_image:
+        proof_dir = f"user_profiles/{username}_proofs"
+        os.makedirs(proof_dir, exist_ok=True)
+        proof_path = os.path.join(proof_dir, f"{vegetable_name}_{score}.jpg")
+        with open(proof_path, "wb") as f:
+            f.write(proof_image.getbuffer())
+        st.success("📸 証拠画像を保存しました！")
+
 
     # 🔐 セーブデータ保存処理（ここに書く！）
     import json, os
@@ -177,3 +215,7 @@ if st.session_state["missions_completed"]:
     st.subheader("📜 過去のミッション達成履歴")
     for i, m in enumerate(st.session_state["missions_completed"], 1):
         st.markdown(f"{i}. {m['vegetable']} → {m['recipe']}（ゾンビ度：{m['zombie_score']}%）")
+
+        proof_path = f"user_profiles/{username}_proofs/{m['vegetable']}_{m['zombie_score']}.jpg"
+        if os.path.exists(proof_path):
+            st.image(proof_path, caption="証拠画像", width=200)
