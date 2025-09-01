@@ -30,7 +30,6 @@ if submitted:
     profile_path = f"user_profiles/{username}.json"
 
     if os.path.exists(profile_path):
-        os.makedirs("user_profiles", exist_ok=True)
         with open(profile_path, "r", encoding="utf-8") as f:
             profile = json.load(f)
             if profile.get("password") == password:
@@ -137,6 +136,7 @@ if st.button("✅ ミッション達成！"):
         "titles": st.session_state["titles"],
         "missions_completed": st.session_state["missions_completed"]
     }
+    os.makedirs(os.path.dirname(profile_path), exist_ok=True)
 
     with open(profile_path, "w", encoding="utf-8") as f:
         json.dump(profile, f, ensure_ascii=False, indent=2)
