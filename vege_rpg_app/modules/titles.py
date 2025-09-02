@@ -17,10 +17,6 @@ import streamlit as st
     "野菜語り部": {
         "説明": "5種類以上の野菜を使った者に与えられる称号。",
         "画像ファイル名": "vege_master.png"
-    },
-    "未開放": {
-        "説明": "まだ獲得していない称号です。",
-        "画像ファイル名": "locked.png"
     }
 }
 
@@ -52,8 +48,5 @@ def check_titles(mission_history, existing_titles=None):
     # 称号条件④：5種類以上の野菜を使った
     if len(unique_veggies) >= 5 and "野菜語り部" not in existing_titles:
         new_titles.append("野菜語り部")
-
-    if st.session_state.get("viewed_rules") and "ルールマスター" not in existing_titles:
-        new_titles.append("ルールマスター")
 
     return new_titles
