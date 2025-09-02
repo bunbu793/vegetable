@@ -178,15 +178,12 @@ if st.button("✅ ミッション達成！"):
         st.markdown(称号データ[称号]["説明"])
 
         # ✅ 画像表示処理をループの中に入れる！
-        image_path = f"assets/images/titles/{称号データ[称号]['画像ファイル名']}"
-        if os.path.exists(image_path):
-            try:
-                img = Image.open(image_path)
-                st.image(img, width=150)
-            except Exception as e:
-                st.warning(f"画像の読み込みに失敗しました：{e}")
-        else:
-            st.warning(f"画像ファイルが見つかりません：{image_path}")
+        # GitHubのraw画像URLを生成
+        image_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[称号]['画像ファイル名']}"
+
+        # Streamlitで直接表示
+        st.image(image_url, width=150)
+
 
 
 if st.session_state["missions_completed"]:
