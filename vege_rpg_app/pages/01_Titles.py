@@ -28,5 +28,3 @@ for title_name in 称号データ.keys():
         st.image("https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/locked.png", width=150)
         if os.path.exists(image_path):
             st.image(image_path, width=150)
-        else:
-            st.warning(f"画像ファイルが見つかりません：{image_path}")
