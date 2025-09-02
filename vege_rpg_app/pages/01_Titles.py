@@ -13,8 +13,9 @@ for title_name in 称号データ.keys():
         # 獲得済みの称号
         st.subheader(f"🏅 {title_name}")
         st.markdown(get_title_info(title_name))
-        image_path = f"assets/images/titles/{称号データ[title_name]['画像ファイル名']}"
-        st.image(image_path, width=150)
+        image_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[title_name]['画像ファイル名']}"
+        st.image(image_url, width=150)
+
 
     else:
         # 未獲得の称号（グレー表示）
