@@ -17,8 +17,13 @@ import streamlit as st
     "野菜語り部": {
         "説明": "5種類以上の野菜を使った者に与えられる称号。",
         "画像ファイル名": "vege_master.png"
+    },
+    "未開放": {
+        "説明": "まだ獲得していない称号です。",
+        "画像ファイル名": "locked.png"
     }
 }
+
 
 
 def get_title_info(title_name):
