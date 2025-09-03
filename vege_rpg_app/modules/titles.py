@@ -16,7 +16,7 @@ import streamlit as st
     },
     "野菜語り部": {
         "説明": "5種類以上の野菜を使った者に与えられる称号。",
-        "画像ファイル名": "vege_master.png"
+        "画像ファイル名": "vegetable_storyteller.png"
     }
 }
 

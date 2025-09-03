@@ -109,11 +109,9 @@ if image_bytes:
 if image_bytes:
     vegetable_name = st.selectbox(
     "撮影した野菜を選んでください",
-    ["にんじん", "トマト", "キャベツ", "ピーマン", "レタス"]
+    ["キャベツ","ブロッコリー","トマト","ニンジン","ホウレンソウ","タマネギ","ジャガイモ","ピーマン","レタス","ダイコン","キュウリ","ナス","カボチャ","サツマイモ","アスパラガス"]
 )
     st.session_state["vegetable_name"] = vegetable_name
-
-    mission = generate_mission(vegetable_name, score)
 
     mission = generate_mission(vegetable_name, score)
 
