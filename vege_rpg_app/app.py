@@ -143,6 +143,11 @@ if st.button("✅ ミッション達成！"):
     st.session_state["missions_completed"].append(mission)
     st.balloons()
 
+    from datetime import datetime
+    mission["timestamp"] = datetime.now().isoformat()
+
+    st.session_state["missions_completed"].append(mission)
+
     # 📸 証拠画像保存処理（ここを追加！）
     if proof_image:
         proof_dir = f"user_profiles/{username}_proofs"
@@ -184,7 +189,7 @@ if st.button("✅ ミッション達成！"):
                 st.session_state["titles"].remove(t)
                 break
 
-    st.session_state["titles"].append(称号)
+        st.session_state["titles"].append(称号)
 
     if 進化元:
         # 🌟 進化演出
