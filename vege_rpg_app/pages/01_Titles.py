@@ -28,6 +28,4 @@ for title_name in 称号データ.keys():
         st.image("https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/locked.png", width=150)
         if os.path.exists(image_path):
             st.image(image_path, width=150)
-            rarity = 称号データ[title_name]["レア度"]
-            color = "gold" if "★★★" in rarity else "silver" if "★★☆" in rarity else "gray"
-            st.markdown(f"<span style='color:{color}; font-size:20px;'>レア度：{rarity}</span>", unsafe_allow_html=True)
+            st.markdown(f"🌟 レア度：{称号データ[title_name]['レア度']}")

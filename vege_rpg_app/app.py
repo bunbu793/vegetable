@@ -177,23 +177,39 @@ if st.button("✅ ミッション達成！"):
         st.session_state["titles"]
     )
     for 称号 in new_titles:
-        st.session_state["titles"].append(称号)
+            進化元 = None
+    for t, data in 称号データ.items():
+        if data.get("進化先") == 称号 and t in st.session_state["titles"]:
+            進化元 = t
+            st.session_state["titles"].remove(t)
+            break
 
-        st.markdown("""
-        <div style="text-align:center; font-size:24px; color:gold;">
-        ✨ 新しい称号を獲得しました ✨
+    st.session_state["titles"].append(称号)
+
+    if 進化元:
+        # 🌟 進化演出
+        st.markdown(f"""
+        <div style="text-align:center; font-size:28px; color:gold;">
+        🌟 称号進化！<br><br>
+        <span style="font-size:24px;">{進化元} → <strong>{称号}</strong></span>
         </div>
         """, unsafe_allow_html=True)
+        st.balloons()
 
+        # 画像表示（進化前→進化後）
+        old_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[進化元]['画像ファイル名']}"
+        new_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[称号]['画像ファイル名']}"
+        st.image(old_url, caption=f"旧称号：{進化元}", width=120)
+        st.image(new_url, caption=f"新称号：{称号}", width=150)
+
+        st.markdown(f"📝 {称号データ[称号]['説明']}")
+    else:
+        # 通常の称号獲得演出
         st.success(f"🏆 称号獲得：{称号}")
         st.markdown(称号データ[称号]["説明"])
-
-        # ✅ 画像表示処理をループの中に入れる！
-        # GitHubのraw画像URLを生成
         image_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[称号]['画像ファイル名']}"
-
-        # Streamlitで直接表示
         st.image(image_url, width=150)
+        st.balloons()
 
 
 
