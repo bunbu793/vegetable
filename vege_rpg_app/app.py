@@ -176,8 +176,8 @@ if st.button("✅ ミッション達成！"):
         st.session_state["missions_completed"],
         st.session_state["titles"]
     )
-    for 称号 in new_titles:
-            進化元 = None
+for 称号 in new_titles:
+    進化元 = None
     for t, data in 称号データ.items():
         if data.get("進化先") == 称号 and t in st.session_state["titles"]:
             進化元 = t
