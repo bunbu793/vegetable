@@ -79,7 +79,7 @@ else:
     for i, m in enumerate(sorted_missions, 1):
         veg = m["vegetable"]
         score = m["zombie_score"]
-        time = m.get("timestamp", "日時不明")
+        timestamp = m.get("timestamp", "日時不明")
 
         # 色分け
         if score < 30:
@@ -92,6 +92,6 @@ else:
             color = "darkred"
 
         st.markdown(
-            f"<span style='color:{color}; font-size:16px;'>{i}. {veg}（{time}） → ゾンビ度：{score}%</span>",
+            f"<span style='color:{color}; font-size:16px;'>{i}. {veg}（{timestamp}） → ゾンビ度：{score}%</span>",
             unsafe_allow_html=True
         )
