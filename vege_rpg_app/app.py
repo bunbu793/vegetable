@@ -191,38 +191,38 @@ if st.button("✅ ミッション達成！"):
 
         st.session_state["titles"].append(称号)
 
-    if 進化元:
-        # 🌟 進化演出
-        st.markdown(f"""
-        <div style="text-align:center; font-size:28px; color:gold;">
-        🌟 称号進化！<br><br>
-        <span style="font-size:24px;">{進化元} → <strong>{称号}</strong></span>
-        </div>
-        """, unsafe_allow_html=True)
-        st.balloons()
+        if 進化元:
+            # 🌟 進化演出
+            st.markdown(f"""
+            <div style="text-align:center; font-size:28px; color:gold;">
+            🌟 称号進化！<br><br>
+            <span style="font-size:24px;">{進化元} → <strong>{称号}</strong></span>
+            </div>
+            """, unsafe_allow_html=True)
+            st.balloons()
 
-        # 画像表示（進化前→進化後）
-        old_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[進化元]['画像ファイル名']}"
-        new_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[称号]['画像ファイル名']}"
-        st.image(old_url, caption=f"旧称号：{進化元}", width=120)
-        st.image(new_url, caption=f"新称号：{称号}", width=150)
+            # 画像表示（進化前→進化後）
+            old_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[進化元]['画像ファイル名']}"
+            new_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[称号]['画像ファイル名']}"
+            st.image(old_url, caption=f"旧称号：{進化元}", width=120)
+            st.image(new_url, caption=f"新称号：{称号}", width=150)
 
-        st.markdown(f"📝 {称号データ[称号]['説明']}")
-    else:
-        # 通常の称号獲得演出
-        st.success(f"🏆 称号獲得：{称号}")
-        st.markdown(称号データ[称号]["説明"])
-        image_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[称号]['画像ファイル名']}"
-        st.image(image_url, width=150)
-        st.balloons()
+            st.markdown(f"📝 {称号データ[称号]['説明']}")
+        else:
+            # 通常の称号獲得演出
+            st.success(f"🏆 称号獲得：{称号}")
+            st.markdown(称号データ[称号]["説明"])
+            image_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[称号]['画像ファイル名']}"
+            st.image(image_url, width=150)
+            st.balloons()
 
 
 
-if st.session_state["missions_completed"]:
-    st.subheader("📜 過去のミッション達成履歴")
-    for i, m in enumerate(st.session_state["missions_completed"], 1):
-        st.markdown(f"{i}. {m['vegetable']} → {m['recipe']}（ゾンビ度：{m['zombie_score']}%）")
+    if st.session_state["missions_completed"]:
+        st.subheader("📜 過去のミッション達成履歴")
+        for i, m in enumerate(st.session_state["missions_completed"], 1):
+            st.markdown(f"{i}. {m['vegetable']} → {m['recipe']}（ゾンビ度：{m['zombie_score']}%）")
 
-        proof_path = f"user_profiles/{username}_proofs/{m['vegetable']}_{m['zombie_score']}.jpg"
-        if os.path.exists(proof_path):
-            st.image(proof_path, caption="証拠画像", width=200)
+            proof_path = f"user_profiles/{username}_proofs/{m['vegetable']}_{m['zombie_score']}.jpg"
+            if os.path.exists(proof_path):
+                st.image(proof_path, caption="証拠画像", width=200)
