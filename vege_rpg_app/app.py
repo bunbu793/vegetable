@@ -140,13 +140,12 @@ if "missions_completed" not in st.session_state:
 
 if st.button("✅ ミッション達成！"):
     st.success("🎉 ミッション完了！ゾンビ野菜を救いました！")
-    st.session_state["missions_completed"].append(mission)
     st.balloons()
 
     from datetime import datetime
     mission["timestamp"] = datetime.now().isoformat()
 
-    st.session_state["missions_completed"].append(mission)
+    st.session_state["missions_completed"].append(mission)  # ←これだけでOK
 
     # 📸 証拠画像保存処理（ここを追加！）
     if proof_image:
