@@ -4,18 +4,17 @@ import streamlit as st
 st.set_page_config(page_title="野菜図鑑", page_icon="🥬")
 st.title("🥬 野菜図鑑")
 
+# 図鑑表示用の野菜一覧
+all_vegetables = list(RECIPE_DB.keys())
+
+for hidden_veg in HIDDEN_VEGETABLES:
+    if hidden_veg in st.session_state.get("items_owned", []):
+        all_vegetables.append(hidden_veg)
+
 # セッション確認
 if "missions_completed" not in st.session_state or not st.session_state["missions_completed"]:
     st.info("まだ野菜を救っていません。診断を行ってミッションを達成しましょう！")
-
 else:
-    # 全野菜リスト（アプリで使っている野菜）
-    all_vegetables = [
-        "キャベツ", "ブロッコリー", "トマト", "ニンジン", "ホウレンソウ",
-        "タマネギ", "ジャガイモ", "ピーマン", "レタス", "ダイコン",
-        "キュウリ", "ナス", "カボチャ", "サツマイモ", "アスパラガス"
-    ]
-
     # ユーザーが救った野菜の種類
     saved_veggies = set([m["vegetable"] for m in st.session_state["missions_completed"]])
     # 未救出の野菜の種類

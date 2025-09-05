@@ -5,7 +5,7 @@ from PIL import Image
 import os
 import json
 from modules.titles import 称号データ, get_title_info
-from modules.mission import generate_mission
+from modules.mission import generate_mission, RECIPE_DB,HIDDEN_VEGETABLES
 
 def explain_zombie_reason(score):
     if score < 30:
@@ -41,6 +41,10 @@ if submitted:
                 st.session_state["username"] = username
                 st.session_state["titles"] = profile.get("titles", [])
                 st.session_state["missions_completed"] = profile.get("missions_completed", [])
+                st.session_state["points"] = profile.get("points", 0)
+                if "items_owned" not in st.session_state:
+                    st.session_state["items_owned"] = []
+
             else:
                 st.error("❌ パスワードが間違っています")
     else:
@@ -51,7 +55,7 @@ if submitted:
         st.session_state["missions_completed"] = []
 if st.session_state.get("authenticated"):
     st.header(f"ようこそ、{st.session_state['username']} さん！")
-
+    st.metric("所持ポイント", f"{st.session_state['points']} pt")
 
 input_method = st.radio("写真の取得方法を選んでください", ["カメラで撮影", "ファイルをアップロード"])
 
@@ -79,6 +83,14 @@ if image_bytes:
     st.image(image_bytes, caption="診断対象の野菜", use_container_width=True)
     score = calculate_zombie_score(image_bytes)
 
+    # 腐敗防止スプレーを持っていたら使えるようにする
+if "腐敗防止スプレー" in st.session_state.get("items_owned", []):
+    if st.button("🧪 腐敗防止スプレーを使う"):
+        score = max(score - 10, 0)
+        st.success("腐敗防止スプレーを使用！ゾンビ度が10%下がりました")
+        st.session_state["items_owned"].remove("腐敗防止スプレー")
+
+        # ゾンビ度の再表示
     st.progress(score / 100)
     st.metric("ゾンビ度", f"{score}%")
 
@@ -106,10 +118,17 @@ if image_bytes:
 
     from modules.mission import generate_mission
 
+available_veggies = list(RECIPE_DB.keys())
+
+# 隠し野菜の解放チェック
+for hidden_veg, data in HIDDEN_VEGETABLES.items():
+    if data["解放条件"] in st.session_state.get("items_owned", []):
+        available_veggies.append(hidden_veg)
+
 if image_bytes:
     vegetable_name = st.selectbox(
     "撮影した野菜を選んでください",
-    ["キャベツ","ブロッコリー","トマト","ニンジン","ホウレンソウ","タマネギ","ジャガイモ","ピーマン","レタス","ダイコン","キュウリ","ナス","カボチャ","サツマイモ","アスパラガス"]
+    list(RECIPE_DB.keys())  # ← これなら確実に一致する
 )
     st.session_state["vegetable_name"] = vegetable_name
 
@@ -135,9 +154,6 @@ if "missions_completed" not in st.session_state:
 if "titles" not in st.session_state:
     st.session_state["titles"] = []
 
-if "missions_completed" not in st.session_state:
-    st.session_state["missions_completed"] = []
-
 if st.button("✅ ミッション達成！"):
     st.success("🎉 ミッション完了！ゾンビ野菜を救いました！")
     st.balloons()
@@ -147,11 +163,14 @@ if st.button("✅ ミッション達成！"):
 
     st.session_state["missions_completed"].append(mission)  # ←これだけでOK
 
+    st.session_state["points"] += mission["reward_points"]
+    st.success(f"🎁 報酬ポイント +{mission['reward_points']}pt（合計：{st.session_state['points']}pt）")
+
     # 📸 証拠画像保存処理（ここを追加！）
     if proof_image:
         proof_dir = f"user_profiles/{username}_proofs"
         os.makedirs(proof_dir, exist_ok=True)
-        proof_path = os.path.join(proof_dir, f"{vegetable_name}_{score}.jpg")
+        proof_path = os.path.join(proof_dir, f"{vegetable_name}_{score}_{mission['timestamp']}.jpg")
         with open(proof_path, "wb") as f:
             f.write(proof_image.getbuffer())
         st.success("📸 証拠画像を保存しました！")
@@ -165,7 +184,9 @@ if st.button("✅ ミッション達成！"):
         "username": username,
         "password": password,
         "titles": st.session_state["titles"],
-        "missions_completed": st.session_state["missions_completed"]
+        "missions_completed": st.session_state["missions_completed"],
+        "points": st.session_state["points"],
+        "items_owned": st.session_state["items_owned"]
     }
     os.makedirs(os.path.dirname(profile_path), exist_ok=True)
 
