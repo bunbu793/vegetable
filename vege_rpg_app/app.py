@@ -1,15 +1,27 @@
 import time
 import streamlit as st
 
+# ===== rerun 両対応ユーティリティ =====
+def safe_rerun():
+    """Streamlitのバージョン差を吸収して安全に再実行する"""
+    if hasattr(st, "rerun"):
+        st.rerun()
+    elif hasattr(st, "experimental_rerun"):
+        st.experimental_rerun()
+
 # ===== 自作オートリフレッシュ関数 =====
 def tick_every_second(active_flag_key="mission_active", tick_key="__tick__", interval=1.0):
-    """mission_active が True の間、interval 秒ごとに再描画を走らせる"""
-    if st.session_state.get(active_flag_key):
-        now = time.time()
-        last = st.session_state.get(tick_key, 0.0)
-        if now - last >= interval:
-            st.session_state[tick_key] = now
-            st.experimental_rerun()
+    """
+    active_flag_key が True の間、interval 秒ごとに再描画を走らせる。
+    st.session_state[tick_key] に最後のtick時刻を持たせて無限ループを回避。
+    """
+    if not st.session_state.get(active_flag_key):
+        return
+    now = time.time()
+    last = st.session_state.get(tick_key, 0.0)
+    if now - last >= interval:
+        st.session_state[tick_key] = now
+        safe_rerun()
 
 # ===== モード選択 =====
 mode = st.radio("モードを選んでね", ["制限時間モード", "ストップウォッチモード"])
@@ -26,7 +38,7 @@ if mode == "制限時間モード":
         st.session_state["mission_active"] = True
 
     if st.session_state.get("mission_active"):
-        tick_every_second()  # ← ここで毎秒再描画
+        tick_every_second()  # ← 毎秒再描画
 
         elapsed = time.time() - st.session_state["mission_start"]
         remaining = max(st.session_state["time_limit"] - elapsed, 0)
@@ -65,7 +77,7 @@ elif mode == "ストップウォッチモード":
         st.session_state["mission_active"] = True
 
     if st.session_state.get("mission_active"):
-        tick_every_second()  # ← ここで毎秒再描画
+        tick_every_second()  # ← 毎秒再描画
 
         elapsed = time.time() - st.session_state["mission_start"]
         minutes = int(elapsed // 60)
