@@ -90,8 +90,3 @@ else:
             color = "red"
         else:
             color = "darkred"
-
-        st.markdown(
-            f"<span style='color:{color}; font-size:16px;'>{i}. {veg}（{timestamp}） → ゾンビ度：{score}%</span>",
-            unsafe_allow_html=True
-        )
