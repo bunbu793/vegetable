@@ -7,6 +7,17 @@ import json
 from modules.titles import 称号データ, get_title_info
 from modules.mission import generate_mission, RECIPE_DB,HIDDEN_VEGETABLES
 
+HIDDEN_VEGETABLES = {
+    "アボカド": {
+        "解放条件": "レアレシピ解放券",
+        "レシピ": ["アボカドサラダ", "アボカドディップ"]
+    },
+    "ケール": {
+        "解放条件": "レアレシピ解放券",
+        "レシピ": ["ケールスムージー", "ケール炒め"]
+    }
+}
+
 def explain_zombie_reason(score):
     if score < 30:
         return "画像のほとんどが明るく鮮やかで、腐敗の兆候は見られませんでした。"
