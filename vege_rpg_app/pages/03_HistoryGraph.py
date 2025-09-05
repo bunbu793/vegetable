@@ -51,20 +51,20 @@ else:
     for i, (veg, score) in enumerate(zip(veggies, scores), 1):
         st.markdown(f"{i}. {veg} → ゾンビ度：{score}%")
 
-        st.subheader("📜 詳細な履歴")
-        with st.expander("履歴を見る"):
-            for i, m in enumerate(st.session_state["missions_completed"], 1):
-                score = m["zombie_score"]
-                if score < 30:
-                    color = "green"
-                elif score < 60:
-                    color = "orange"
-                elif score < 80:
-                    color = "red"
-                else:
-                    color = "darkred"
+    st.subheader("📜 詳細な履歴")
+    with st.expander("履歴を見る"):
+        for i, m in enumerate(st.session_state["missions_completed"], 1):
+            score = m["zombie_score"]
+            if score < 30:
+                color = "green"
+            elif score < 60:
+                color = "orange"
+            elif score < 80:
+                color = "red"
+            else:
+                color = "darkred"
 
-                st.markdown(
-                    f"<span style='color:{color}; font-size:16px;'>{i}. {m['vegetable']} → ゾンビ度：{score}%（{m['timestamp']}）</span>",
-                    unsafe_allow_html=True
-                )
+            st.markdown(
+                f"<span style='color:{color}; font-size:16px;'>{i}. {m['vegetable']} → ゾンビ度：{score}%（{m['timestamp']}）</span>",
+                unsafe_allow_html=True
+            )
