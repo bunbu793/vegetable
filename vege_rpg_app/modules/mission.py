@@ -76,3 +76,4 @@ def generate_mission(vegetable_name, zombie_score):
         "mission": mission_text,
         "reward_points": reward_points
     }
+__all__ = ["generate_mission", "RECIPE_DB", "HIDDEN_VEGETABLES"]
