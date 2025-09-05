@@ -143,14 +143,14 @@ if st.session_state.get("authenticated"):
             if k not in st.session_state:
                 st.session_state[k] = v
 
-        # ===== rerun 両対応ユーティリティ =====
+        # ===== rerun 両対応 =====
         def safe_rerun():
             if hasattr(st, "rerun"):
                 st.rerun()
             elif hasattr(st, "experimental_rerun"):
                 st.experimental_rerun()
 
-        # ===== 自作オートリフレッシュ関数 =====
+        # ===== 毎秒更新 =====
         def tick_every_second(active_flag_key="mission_active", tick_key="__tick__", interval=1.0):
             if not st.session_state.get(active_flag_key):
                 return
@@ -200,13 +200,39 @@ if st.session_state.get("authenticated"):
                     <div class="blink">💀 GAME OVER 💀</div>
                     """, unsafe_allow_html=True)
 
+                # 証拠画像提出
+                proof_method = st.radio("証拠画像の取得方法", ["カメラで撮影", "ファイルをアップロード"])
+                st.session_state["proof_image"] = (
+                    st.camera_input("証拠写真を撮影してください") if proof_method == "カメラで撮影"
+                    else st.file_uploader("証拠写真をアップロードしてください", type=["png", "jpg", "jpeg"])
+                )
+
                 if st.button("✅ ミッション達成！"):
                     if remaining > 0:
+                        bonus = 10
                         st.success("⏱ 時間内クリア！+10pt")
-                        st.session_state["points"] += 10
                         st.balloons()
                     else:
+                        bonus = 0
                         st.error("💀 時間切れ！ボーナスなし")
+
+                    st.session_state["points"] += bonus
+                    mission["timestamp"] = datetime.now().strftime("%Y%m%d%H%M%S")
+                    st.session_state["missions_completed"].append(mission)
+
+                    # 証拠画像保存（命名規則）
+                    proof_image = st.session_state.get("proof_image")
+                    if proof_image:
+                        proof_dir = f"user_profiles/{username}_proofs"
+                        os.makedirs(proof_dir, exist_ok=True)
+                        proof_path = os.path.join(
+                            proof_dir,
+                            f"{vegetable_name}_{score}_{mission['timestamp']}.jpg"
+                        )
+                        with open(proof_path, "wb") as f:
+                            f.write(proof_image.getbuffer())
+                        st.success("📸 証拠画像を保存しました！")
+
                     st.session_state["mission_active"] = False
 
         # ==============================
@@ -232,7 +258,6 @@ if st.session_state.get("authenticated"):
                 )
 
                 if st.button("✅ ミッション達成！"):
-                    # タイム別ポイント
                     if elapsed <= 60:
                         bonus = 15
                         st.success("🥇 超高速クリア！+15pt")
@@ -253,42 +278,20 @@ if st.session_state.get("authenticated"):
                     mission["timestamp"] = datetime.now().strftime("%Y%m%d%H%M%S")
                     st.session_state["missions_completed"].append(mission)
 
-            # 証拠画像保存
-            proof_image = st.session_state.get("proof_image")
-            if proof_image:
-                proof_dir = f"user_profiles/{username}_proofs"
-                os.makedirs(proof_dir, exist_ok=True)
-                proof_path = os.path.join(proof_dir, f"{vegetable_name}_{score}_{mission['timestamp']}.jpg")
-                with open(proof_path, "wb") as f:
-                    f.write(proof_image.getbuffer())
-                st.success("📸 証拠画像を保存しました！")
+                    # 証拠画像保存（命名規則）
+                    proof_image = st.session_state.get("proof_image")
+                    if proof_image:
+                        proof_dir = f"user_profiles/{username}_proofs"
+                        os.makedirs(proof_dir, exist_ok=True)
+                        proof_path = os.path.join(
+                            proof_dir,
+                            f"{vegetable_name}_{score}_{mission['timestamp']}.jpg"
+                        )
+                        with open(proof_path, "wb") as f:
+                            f.write(proof_image.getbuffer())
+                        st.success("📸 証拠画像を保存しました！")
 
-            st.session_state["mission_active"] = False
-
-                    st.session_state["points"] += bonus
                     st.session_state["mission_active"] = False
-                # 証拠画像提出
-                proof_method = st.radio("証拠画像の取得方法", ["カメラで撮影", "ファイルをアップロード"])
-                proof_image = st.camera_input("証拠写真を撮影してください") if proof_method == "カメラで撮影" else \
-                            st.file_uploader("証拠写真をアップロードしてください", type=["png", "jpg", "jpeg"])
-
-                # ミッション達成
-                if st.button("✅ ミッション達成！"):
-                    mission["timestamp"] = datetime.now().strftime("%Y%m%d%H%M%S")
-                    st.session_state["missions_completed"].append(mission)
-                    st.session_state["points"] += mission["reward_points"]
-                    st.success(f"🎁 報酬ポイント +{mission['reward_points']}pt（合計：{st.session_state['points']}pt）")
-                    st.balloons()
-
-            # 証拠画像保存（命名規則統一）
-            if proof_image:
-                proof_dir = f"user_profiles/{username}_proofs"
-                os.makedirs(proof_dir, exist_ok=True)
-                proof_path = os.path.join(proof_dir, f"{vegetable_name}_{score}_{mission['timestamp']}.jpg")
-                with open(proof_path, "wb") as f:
-                    f.write(proof_image.getbuffer())
-                st.success("📸 証拠画像を保存しました！")
-
             # セーブデータ保存
             profile_path = f"user_profiles/{username}.json"
             profile = {
