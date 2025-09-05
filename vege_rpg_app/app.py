@@ -1,10 +1,17 @@
-import streamlit as st
 import time
-from streamlit_autorefresh import st_autorefresh
+import streamlit as st
 
-# 1秒ごとにページ再描画
-st_autorefresh(interval=1000, key="timer_refresh")
+# ===== 自作オートリフレッシュ関数 =====
+def tick_every_second(active_flag_key="mission_active", tick_key="__tick__", interval=1.0):
+    """mission_active が True の間、interval 秒ごとに再描画を走らせる"""
+    if st.session_state.get(active_flag_key):
+        now = time.time()
+        last = st.session_state.get(tick_key, 0.0)
+        if now - last >= interval:
+            st.session_state[tick_key] = now
+            st.experimental_rerun()
 
+# ===== モード選択 =====
 mode = st.radio("モードを選んでね", ["制限時間モード", "ストップウォッチモード"])
 
 # ==============================
@@ -19,6 +26,8 @@ if mode == "制限時間モード":
         st.session_state["mission_active"] = True
 
     if st.session_state.get("mission_active"):
+        tick_every_second()  # ← ここで毎秒再描画
+
         elapsed = time.time() - st.session_state["mission_start"]
         remaining = max(st.session_state["time_limit"] - elapsed, 0)
         minutes = int(remaining // 60)
@@ -56,6 +65,8 @@ elif mode == "ストップウォッチモード":
         st.session_state["mission_active"] = True
 
     if st.session_state.get("mission_active"):
+        tick_every_second()  # ← ここで毎秒再描画
+
         elapsed = time.time() - st.session_state["mission_start"]
         minutes = int(elapsed // 60)
         seconds = int(elapsed % 60)
@@ -64,15 +75,15 @@ elif mode == "ストップウォッチモード":
         if st.button("✅ ミッション達成！"):
             elapsed = time.time() - st.session_state["mission_start"]
 
-            if elapsed <= 600:
+            if elapsed <= 60:
                 bonus = 15
                 st.success("🥇 超高速クリア！+15pt")
                 st.balloons()
-            elif elapsed <= 900:
+            elif elapsed <= 180:
                 bonus = 10
                 st.success("⏱ 早い！+10pt")
                 st.balloons()
-            elif elapsed <= 1200:
+            elif elapsed <= 300:
                 bonus = 5
                 st.info("👍 ナイス！+5pt")
                 st.snow()
