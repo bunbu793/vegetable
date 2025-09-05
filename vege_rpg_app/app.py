@@ -7,8 +7,8 @@ import json
 from datetime import datetime
 from modules.titles import 称号データ, get_title_info, check_titles
 from modules.mission import generate_mission, RECIPE_DB, HIDDEN_VEGETABLES
-import time 
-from collections import defaultdict
+import time ,os
+from datetime import datetime
 
 # ------------------------
 # ゾンビ度の理由説明
@@ -130,6 +130,19 @@ if st.session_state.get("authenticated"):
         st.markdown(mission["mission"])
         st.session_state["current_mission"] = mission
 
+        # ===== 初期化 =====
+        for k, v in {
+            "mission_active": False,
+            "mission_start": None,
+            "time_limit": None,
+            "points": 0,
+            "proof_image": None,
+            "__tick__": 0.0,
+            "__timer_mode__": None
+        }.items():
+            if k not in st.session_state:
+                st.session_state[k] = v
+
         # ===== rerun 両対応ユーティリティ =====
         def safe_rerun():
             if hasattr(st, "rerun"):
@@ -147,14 +160,13 @@ if st.session_state.get("authenticated"):
                 st.session_state[tick_key] = now
                 safe_rerun()
 
-        # ===== 初期化 =====
-        if "mission_active" not in st.session_state:
-            st.session_state["mission_active"] = False
-        if "points" not in st.session_state:
-            st.session_state["points"] = 0
-
         # ===== モード選択 =====
-        mode = st.radio("モードを選んでね", ["制限時間モード", "ストップウォッチモード"])
+        mode = st.radio("モードを選んでね", ["制限時間モード", "ストップウォッチモード"], key="mode_radio")
+        if st.session_state["__timer_mode__"] != st.session_state["mode_radio"]:
+            st.session_state["mission_active"] = False
+            st.session_state["mission_start"] = None
+            st.session_state["__tick__"] = time.time()
+            st.session_state["__timer_mode__"] = st.session_state["mode_radio"]
 
         # ==============================
         # 制限時間モード
@@ -169,7 +181,6 @@ if st.session_state.get("authenticated"):
                     st.session_state["mission_active"] = True
             else:
                 tick_every_second()
-
                 elapsed = time.time() - st.session_state["mission_start"]
                 remaining = max(st.session_state["time_limit"] - elapsed, 0)
                 minutes = int(remaining // 60)
@@ -208,15 +219,20 @@ if st.session_state.get("authenticated"):
                     st.session_state["mission_active"] = True
             else:
                 tick_every_second()
-
                 elapsed = time.time() - st.session_state["mission_start"]
                 minutes = int(elapsed // 60)
                 seconds = int(elapsed % 60)
                 st.metric("経過時間", f"{minutes}分 {seconds}秒")
 
-                if st.button("✅ ミッション達成！"):
-                    elapsed = time.time() - st.session_state["mission_start"]
+                # 証拠画像提出
+                proof_method = st.radio("証拠画像の取得方法", ["カメラで撮影", "ファイルをアップロード"])
+                st.session_state["proof_image"] = (
+                    st.camera_input("証拠写真を撮影してください") if proof_method == "カメラで撮影"
+                    else st.file_uploader("証拠写真をアップロードしてください", type=["png", "jpg", "jpeg"])
+                )
 
+                if st.button("✅ ミッション達成！"):
+                    # タイム別ポイント
                     if elapsed <= 60:
                         bonus = 15
                         st.success("🥇 超高速クリア！+15pt")
@@ -232,6 +248,22 @@ if st.session_state.get("authenticated"):
                     else:
                         bonus = 2
                         st.warning("お疲れ！+2pt")
+
+                    st.session_state["points"] += bonus
+                    mission["timestamp"] = datetime.now().strftime("%Y%m%d%H%M%S")
+                    st.session_state["missions_completed"].append(mission)
+
+            # 証拠画像保存
+            proof_image = st.session_state.get("proof_image")
+            if proof_image:
+                proof_dir = f"user_profiles/{username}_proofs"
+                os.makedirs(proof_dir, exist_ok=True)
+                proof_path = os.path.join(proof_dir, f"{vegetable_name}_{score}_{mission['timestamp']}.jpg")
+                with open(proof_path, "wb") as f:
+                    f.write(proof_image.getbuffer())
+                st.success("📸 証拠画像を保存しました！")
+
+            st.session_state["mission_active"] = False
 
                     st.session_state["points"] += bonus
                     st.session_state["mission_active"] = False
