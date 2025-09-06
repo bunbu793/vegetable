@@ -96,9 +96,18 @@ if submitted:
 # 認証後の処理
 # ------------------------
 if st.session_state.get("authenticated"):
-    username = st.session_state.get("username", "")
-    st.write(f"DEBUG: username = {username}")
+    st.header(f"ようこそ、{st.session_state['username']} さん！")
     st.metric("所持ポイント", f"{st.session_state['points']} pt")
+
+    # レベルと経験値の表示
+    level = st.session_state.get("level", 1)
+    exp = st.session_state.get("exp", 0)
+    next_exp = 100  # レベルアップに必要な経験値
+
+    progress_percent = round((exp / next_exp) * 100, 1)
+    st.subheader(f"🧪 今のレベルは Lv.{level} の {progress_percent}% です")
+    st.progress(exp / next_exp)
+    st.caption(f"経験値：{exp} / {next_exp}")
 
     # 画像取得方法の選択
     input_method = st.radio("写真の取得方法を選んでください", ["カメラで撮影", "ファイルをアップロード"])
@@ -291,6 +300,14 @@ if st.session_state.get("authenticated"):
                     st.session_state["points"] += base_bonus
                     st.success(f"🎁 報酬ポイント +{base_bonus}pt（合計：{st.session_state['points']}pt）")
                     st.balloons()
+
+                # 経験値加算とレベルアップ処理
+                st.session_state["exp"] += 20  # ミッション達成で経験値+20
+
+                while st.session_state["exp"] >= 100:
+                    st.session_state["exp"] -= 100
+                    st.session_state["level"] += 1
+                    st.success(f"🎉 レベルアップ！Lv.{st.session_state['level']} になりました！")
             # セーブデータ保存
             profile_path = f"user_profiles/{username}.json"
             profile = {
