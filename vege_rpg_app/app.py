@@ -97,7 +97,7 @@ if submitted:
 # ------------------------
 if st.session_state.get("authenticated"):
     username = st.session_state.get("username", "")
-    st.header(f"ようこそ、{username} さん！")
+    st.write(f"DEBUG: username = {username}")
     st.metric("所持ポイント", f"{st.session_state['points']} pt")
 
     # 画像取得方法の選択
