@@ -209,6 +209,8 @@ if st.session_state.get("authenticated"):
         # ===== ミッション達成処理 =====
         if st.button("✅ ミッション達成！"):
             bonus = base_bonus
+            mission_info = generate_mission(vegetable_name, score)
+            recipe = mission_info["recipe"]
             mission_data = {
                 "vegetable": vegetable_name,
                 "zombie_score": score,
