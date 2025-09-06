@@ -317,8 +317,9 @@ if st.session_state.get("authenticated"):
                 "missions_completed": st.session_state["missions_completed"],
                 "points": st.session_state["points"],
                 "items_owned": st.session_state["items_owned"],
-                "level": st.session_state["level"],
-                "exp": st.session_state["exp"],
+                "level": profile.get("level", 1),        
+                "exp": profile.get("exp", 0),           
+
                 "rare_veggies_data": st.session_state["rare_veggies_data"]
             }
             os.makedirs(os.path.dirname(profile_path), exist_ok=True)
