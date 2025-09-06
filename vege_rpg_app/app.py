@@ -9,6 +9,7 @@ from modules.titles import 称号データ, get_title_info, check_titles
 from modules.mission import generate_mission, RECIPE_DB, HIDDEN_VEGETABLES
 import time ,os
 from datetime import datetime
+import random
 
 # ------------------------
 # ゾンビ度の理由説明
@@ -124,12 +125,79 @@ if st.session_state.get("authenticated"):
             if data["解放条件"] in st.session_state["items_owned"]:
                 available_veggies.append(hidden_veg)
 
-        # ===== ミッション表示 =====
+        # ===== 初期化 =====
+        for k, v in {
+            "points": 0,
+            "missions_completed": [],
+            "titles": [],
+            "items_owned": [],
+            "level": 1,
+            "exp": 0
+        }.items():
+            if k not in st.session_state:
+                st.session_state[k] = v
+
+        username = st.session_state.get("username", "player")
+        password = st.session_state.get("password", "")
+
+        # ===== アイテムデータ =====
+        items_data = {
+            "スーパートマトジュース": {"説明": "ポイント+5", "必要レベル": 1, "効果": {"points": 5}},
+            "黄金のニンジン": {"説明": "称号獲得率UP", "必要レベル": 3, "効果": {"title_boost": True}},
+            "伝説のカボチャ": {"説明": "ポイント+20", "必要レベル": 5, "効果": {"points": 20}}
+        }
+
+        # ===== レア野菜データ =====
+        if "rare_veggies_data" not in st.session_state:
+            st.session_state["rare_veggies_data"] = {
+                "白いナス": {"説明": "希少なナス。特別ミッションで使用可能", "解放済み": False},
+                "紫色のカリフラワー": {"説明": "ポイントボーナス付き", "解放済み": False},
+                "黄金のトマト": {"説明": "称号獲得率UP", "解放済み": False}
+            }
+
+        # ===== 野菜選択肢 =====
+        base_veggies = ["トマト", "ナス", "キャベツ"]
+        rare_veggies_unlocked = [
+            name for name, data in st.session_state["rare_veggies_data"].items()
+            if data["解放済み"]
+        ]
+        available_veggies = base_veggies + rare_veggies_unlocked
+
+        # ===== 野菜選択UI =====
         vegetable_name = st.selectbox("撮影した野菜を選んでください", available_veggies)
-        mission = generate_mission(vegetable_name, score)
+
+        # ===== ミッション生成 =====
+        def generate_mission(vegetable_name):
+            if vegetable_name in st.session_state["rare_veggies_data"]:
+                return f"🌟 特別ミッション！{vegetable_name}を使って料理を作れ！", 20
+            else:
+                return f"{vegetable_name}を使った料理を作れ！", 10
+
+        mission_text, base_bonus = generate_mission(vegetable_name)
         st.subheader("🎯 今日のミッション")
-        st.markdown(mission["mission"])
-        st.session_state["current_mission"] = mission
+        st.markdown(mission_text)
+
+        # ===== レア野菜ミニゲーム =====
+        def rare_veggie_minigame(vegetable_name, base_bonus):
+            st.info(f"🎮 {vegetable_name} 料理シミュレーション開始！")
+
+            method = st.radio("調理法を選ぼう", ["焼く", "煮る", "生で食べる"], key="method")
+            ingredient = st.selectbox("追加食材を選ぼう", ["チーズ", "ベーコン", "はちみつ"], key="ingredient")
+            seasoning = st.radio("味付けを選ぼう", ["塩コショウ", "カレー風味", "甘辛ソース"], key="seasoning")
+
+            if st.button("料理完成！", key="cook_btn"):
+                outcome = random.choice(["大成功！", "まあまあ", "失敗…"])
+                st.success(f"{outcome} {method} {ingredient} {seasoning} の {vegetable_name}料理が完成！")
+
+                bonus = base_bonus
+                if outcome == "大成功！":
+                    bonus += 10
+                    st.balloons()
+
+                st.session_state["points"] += bonus
+                st.success(f"🎁 ボーナス {bonus}pt（合計：{st.session_state['points']}pt）")
+                return bonus
+            return None
 
         # ===== 証拠画像提出 =====
         proof_method = st.radio("証拠画像の取得方法", ["カメラで撮影", "ファイルをアップロード"])
@@ -138,44 +206,59 @@ if st.session_state.get("authenticated"):
             else st.file_uploader("証拠写真をアップロードしてください", type=["png", "jpg", "jpeg"])
         )
 
-        # ===== ミッション達成 =====
+        # ===== ミッション達成処理 =====
         if st.button("✅ ミッション達成！"):
-            bonus = 10  # 固定ポイント
-            st.session_state["points"] += bonus
-            mission["timestamp"] = datetime.now().strftime("%Y%m%d%H%M%S")
-            st.session_state["missions_completed"].append(mission)
+            bonus = base_bonus
+            if vegetable_name in st.session_state["rare_veggies_data"]:
+                result = rare_veggie_minigame(vegetable_name, base_bonus)
+                if result is not None:
+                    bonus = result
+            else:
+                st.session_state["points"] += base_bonus
+                st.success(f"🎁 報酬ポイント +{base_bonus}pt（合計：{st.session_state['points']}pt）")
+                st.balloons()
 
-            # 証拠画像保存（命名規則: 野菜名_スコア_タイムスタンプ.jpg）
+            # 証拠画像保存
             if proof_image:
                 proof_dir = f"user_profiles/{username}_proofs"
                 os.makedirs(proof_dir, exist_ok=True)
                 proof_path = os.path.join(
                     proof_dir,
-                    f"{vegetable_name}_{score}_{mission['timestamp']}.jpg"
+                    f"{vegetable_name}_{bonus}_{datetime.now().strftime('%Y%m%d%H%M%S')}.jpg"
                 )
                 with open(proof_path, "wb") as f:
                     f.write(proof_image.getbuffer())
                 st.success("📸 証拠画像を保存しました！")
 
-            st.success(f"🎁 報酬ポイント +{bonus}pt（合計：{st.session_state['points']}pt）")
-            st.balloons()
-
-            # ===== セーブデータ保存 =====
+            # セーブデータ保存
             profile_path = f"user_profiles/{username}.json"
             profile = {
                 "username": username,
-                "password": password,  # 本番運用ならハッシュ化推奨
+                "password": password,
                 "titles": st.session_state["titles"],
                 "missions_completed": st.session_state["missions_completed"],
                 "points": st.session_state["points"],
-                "items_owned": st.session_state["items_owned"]
+                "items_owned": st.session_state["items_owned"],
+                "level": st.session_state["level"],
+                "exp": st.session_state["exp"],
+                "rare_veggies_data": st.session_state["rare_veggies_data"]
             }
             os.makedirs(os.path.dirname(profile_path), exist_ok=True)
             with open(profile_path, "w", encoding="utf-8") as f:
                 json.dump(profile, f, ensure_ascii=False, indent=2)
             st.success("💾 セーブデータを保存しました！")
 
-            # ===== 称号獲得チェック =====
+        # ===== アイテム一覧表示 =====
+        st.subheader("🎁 アイテム一覧")
+        for name, data in items_data.items():
+            if st.session_state["level"] >= data["必要レベル"]:
+                st.write(f"🛒 {name} - {data['説明']}")
+            else:
+                st.write(f"🔒 {name} - {data['必要レベル']}レベルで解放")
+                st.markdown("アイテムは「アイテムショップ」ページで購入できます。")
+
+        # ===== 称号獲得チェック =====
+        if "check_titles" in globals():
             new_titles = check_titles(st.session_state["missions_completed"], st.session_state["titles"])
             for 称号 in new_titles:
                 進化元 = None
