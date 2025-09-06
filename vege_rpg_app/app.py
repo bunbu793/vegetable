@@ -61,11 +61,36 @@ if submitted:
         st.session_state.update({
             "authenticated": True,
             "username": username,
+            "password": password,  # ← これも session_state に入れる
             "titles": [],
             "missions_completed": [],
             "points": 0,
-            "items_owned": []
+            "items_owned": [],
+            "level": 1,
+            "exp": 0,
+            "rare_veggies_data": {
+                "白いナス": {"説明": "希少なナス。特別ミッションで使用可能", "解放済み": False},
+                "紫色のカリフラワー": {"説明": "ポイントボーナス付き", "解放済み": False},
+                "黄金のトマト": {"説明": "称号獲得率UP", "解放済み": False}
+            }
         })
+
+        # ✅ 新規ユーザーのセーブデータを保存
+        profile = {
+            "username": username,
+            "password": password,
+            "titles": [],
+            "missions_completed": [],
+            "points": 0,
+            "items_owned": [],
+            "level": 1,
+            "exp": 0,
+            "rare_veggies_data": st.session_state["rare_veggies_data"]
+        }
+        os.makedirs("user_profiles", exist_ok=True)
+        with open(profile_path, "w", encoding="utf-8") as f:
+            json.dump(profile, f, ensure_ascii=False, indent=2)
+        st.success("📝 新規ユーザー登録完了！")
 
 # ------------------------
 # 認証後の処理
