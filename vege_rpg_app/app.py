@@ -52,8 +52,12 @@ if submitted:
                 "titles": profile.get("titles", []),
                 "missions_completed": profile.get("missions_completed", []),
                 "points": profile.get("points", 0),
-                "items_owned": profile.get("items_owned", [])
+                "items_owned": profile.get("items_owned", []),
+                "level": profile.get("level", 1),  # ← 追加！
+                "exp": profile.get("exp", 0),      # ← 追加！
+                "rare_veggies_data": profile.get("rare_veggies_data", {})
             })
+
         else:
             st.error("❌ パスワードが間違っています")
     else:
