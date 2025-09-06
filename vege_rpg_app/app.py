@@ -96,7 +96,7 @@ if submitted:
 # 認証後の処理
 # ------------------------
 if st.session_state.get("authenticated"):
-    st.header(f"ようこそ、{st.session_state['username']} さん！")
+    st.header(f"ようこそ,{'username'} さん！")
     st.metric("所持ポイント", f"{st.session_state['points']} pt")
 
     # 画像取得方法の選択

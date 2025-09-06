@@ -63,4 +63,3 @@ current_user = st.session_state.get("username", "")
 
 show_ranking("📅 今週のランキング", get_period_ranking("week"), current_user)
 show_ranking("🗓️ 今月のランキング", get_period_ranking("month"), current_user)
-show_ranking("🌐 通常ランキング", [(u["username"], u["points"]) for u in load_all_profiles()], current_user)
