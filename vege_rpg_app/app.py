@@ -209,6 +209,13 @@ if st.session_state.get("authenticated"):
         # ===== ミッション達成処理 =====
         if st.button("✅ ミッション達成！"):
             bonus = base_bonus
+            mission_data = {
+                "vegetable": vegetable_name,
+                "zombie_score": score,
+                "recipe": recipe,
+                "timestamp": datetime.now().strftime("%Y%m%d%H%M%S")
+            }
+
             if vegetable_name in st.session_state["rare_veggies_data"]:
                 result = rare_veggie_minigame(vegetable_name, base_bonus)
                 if result is not None:
@@ -295,6 +302,6 @@ if st.session_state.get("authenticated"):
                 st.subheader("📜 過去のミッション達成履歴")
                 for i, m in enumerate(st.session_state["missions_completed"], 1):
                     st.markdown(f"{i}. {m['vegetable']} → {m['recipe']}（ゾンビ度：{m['zombie_score']}%）")
-                    proof_path = f"user_profiles/{username}_proofs/{m['vegetable']}_{m['zombie_score']}_{m['timestamp']}.jpg"
+                    "user_profiles/{username}_proofs/{m['vegetable']}_{m['zombie_score']}_{m['timestamp']}.jpg"
                     if os.path.exists(proof_path):
                         st.image(proof_path, caption="証拠画像", width=200)
