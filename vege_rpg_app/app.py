@@ -123,6 +123,8 @@ if submitted:
 # 認証後の処理
 # ------------------------
 if st.session_state.get("authenticated"):
+    if "rare_unlock_ticket" not in st.session_state:
+        st.session_state["rare_unlock_ticket"] = 0
     if "rare_veggies_data" not in st.session_state:
             st.session_state["rare_veggies_data"] = {
                 "白いナス": {"説明": "希少なナス。特別ミッションで使用可能", "解放済み": False},

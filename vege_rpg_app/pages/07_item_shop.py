@@ -43,7 +43,10 @@ for item_name, data in ITEMS_DB.items():
 # ===== レア野菜解放UI =====
 if st.session_state["rare_unlock_ticket"] > 0:
     st.subheader("🎫 レア野菜解放")
-    locked_veggies = [name for name, data in rare_veggies_data.items() if not data["解放済み"]]
+    locked_veggies = [
+        name for name, data in rare_veggies_data.items()
+        if not data["解放済み"]
+    ]
     if locked_veggies:
         choice = st.radio("解放するレア野菜を選んでください", locked_veggies, key="unlock_choice")
         if st.button("このレア野菜を解放する", key="unlock_btn"):
