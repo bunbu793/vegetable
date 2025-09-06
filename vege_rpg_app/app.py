@@ -231,11 +231,26 @@ if st.session_state.get("authenticated"):
                 recipe = mission_info["recipe"]
                 timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
+                # ✅ ここで証拠画像保存と proof_path の定義をする
+                proof_path = None  # 初期化しておくと安全
+                if proof_image:
+                    proof_dir = f"user_profiles/{username}_proofs"
+                    os.makedirs(proof_dir, exist_ok=True)
+                    proof_path = os.path.join(
+                        proof_dir,
+                        f"{vegetable_name}_{score}_{timestamp}.jpg"
+                    )
+                    with open(proof_path, "wb") as f:
+                        f.write(proof_image.getbuffer())
+                    st.success("📸 証拠画像を保存しました！")
+
+                # ✅ そのあとで mission_data を作成する
                 mission_data = {
                     "vegetable": vegetable_name,
                     "zombie_score": score,
                     "recipe": recipe,
-                    "timestamp": timestamp
+                    "timestamp": timestamp,
+                    "proof_path": proof_path
                 }
 
                 st.session_state["missions_completed"].append(mission_data)
@@ -250,19 +265,6 @@ if st.session_state.get("authenticated"):
                     st.session_state["points"] += base_bonus
                     st.success(f"🎁 報酬ポイント +{base_bonus}pt（合計：{st.session_state['points']}pt）")
                     st.balloons()
-
-                # 証拠画像保存
-                if proof_image:
-                    proof_dir = f"user_profiles/{username}_proofs"
-                    os.makedirs(proof_dir, exist_ok=True)
-                    proof_path = os.path.join(
-                        proof_dir,
-                        f"{vegetable_name}_{score}_{timestamp}.jpg"
-                    )
-                    with open(proof_path, "wb") as f:
-                        f.write(proof_image.getbuffer())
-                    st.success("📸 証拠画像を保存しました！")
-
             # セーブデータ保存
             profile_path = f"user_profiles/{username}.json"
             profile = {
@@ -274,8 +276,7 @@ if st.session_state.get("authenticated"):
                 "items_owned": st.session_state["items_owned"],
                 "level": st.session_state["level"],
                 "exp": st.session_state["exp"],
-                "rare_veggies_data": st.session_state["rare_veggies_data"],
-                "proof_path": proof_path if proof_image else None
+                "rare_veggies_data": st.session_state["rare_veggies_data"]
             }
             os.makedirs(os.path.dirname(profile_path), exist_ok=True)
             with open(f"user_profiles/{username}.json", "w", encoding="utf-8") as f:
@@ -292,42 +293,41 @@ if st.session_state.get("authenticated"):
                 st.markdown("アイテムは「アイテムショップ」ページで購入できます。")
 
         # ===== 称号獲得チェック =====
-        if "check_titles" in globals():
-            new_titles = check_titles(st.session_state["missions_completed"], st.session_state["titles"])
-            for 称号 in new_titles:
-                進化元 = None
-                for t, data in 称号データ.items():
-                    if data.get("進化先") == 称号 and t in st.session_state["titles"]:
-                        進化元 = t
-                        st.session_state["titles"].remove(t)
-                        break
+        new_titles = check_titles(st.session_state["missions_completed"], st.session_state["titles"])
+        for 称号 in new_titles:
+            進化元 = None
+            for t, data in 称号データ.items():
+                if data.get("進化先") == 称号 and t in st.session_state["titles"]:
+                    進化元 = t
+                    st.session_state["titles"].remove(t)
+                    break
+            st.session_state["titles"].append(称号)
 
-                st.session_state["titles"].append(称号)
+            if 進化元:
+                st.markdown(f"""
+                <div style="text-align:center; font-size:28px; color:gold;">
+                🌟 称号進化！<br><br>
+                <span style="font-size:24px;">{進化元} → <strong>{称号}</strong></span>
+                </div>
+                """, unsafe_allow_html=True)
+                st.balloons()
+                old_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[進化元]['画像ファイル名']}"
+                new_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[称号]['画像ファイル名']}"
+                st.image(old_url, caption=f"旧称号：{進化元}", width=120)
+                st.image(new_url, caption=f"新称号：{称号}", width=150)
+                st.markdown(f"📝 {称号データ[称号]['説明']}")
+            else:
+                st.success(f"🏆 称号獲得：{称号}")
+                st.markdown(称号データ[称号]["説明"])
+                image_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[称号]['画像ファイル名']}"
+                st.image(image_url, width=150)
+                st.balloons()
 
-                if 進化元:
-                    st.markdown(f"""
-                    <div style="text-align:center; font-size:28px; color:gold;">
-                    🌟 称号進化！<br><br>
-                    <span style="font-size:24px;">{進化元} → <strong>{称号}</strong></span>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    st.balloons()
-                    old_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[進化元]['画像ファイル名']}"
-                    new_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[称号]['画像ファイル名']}"
-                    st.image(old_url, caption=f"旧称号：{進化元}", width=120)
-                    st.image(new_url, caption=f"新称号：{称号}", width=150)
-                    st.markdown(f"📝 {称号データ[称号]['説明']}")
-                else:
-                    st.success(f"🏆 称号獲得：{称号}")
-                    st.markdown(称号データ[称号]["説明"])
-                    image_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[称号]['画像ファイル名']}"
-                    st.image(image_url, width=150)
-                    st.balloons()
+        # 過去のミッション履歴表示
+        if st.session_state["missions_completed"]:
+            st.subheader("📜 過去のミッション達成履歴")
+        for m in st.session_state["missions_completed"]:
+            st.markdown(f"{m['vegetable']} → {m['recipe']}（ゾンビ度：{m['zombie_score']}%）")
+            if m.get("proof_path") and os.path.exists(m["proof_path"]):
+                st.image(m["proof_path"], caption="証拠画像", width=200)
 
-            # 過去のミッション履歴表示
-            if st.session_state["missions_completed"]:
-                st.subheader("📜 過去のミッション達成履歴")
-                for i, m in enumerate(st.session_state["missions_completed"], 1):
-                    st.markdown(f"{i}. {m['vegetable']} → {m['recipe']}（ゾンビ度：{m['zombie_score']}%）")
-                    if m.get("proof_path") and os.path.exists(m["proof_path"]):
-                        st.image(m["proof_path"], caption="証拠画像", width=200)
