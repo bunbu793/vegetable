@@ -74,10 +74,15 @@ if st.session_state.get("authenticated"):
     st.header(f"ようこそ、{st.session_state['username']} さん！")
     st.metric("所持ポイント", f"{st.session_state['points']} pt")
 
-    # 画像取得
+    # 画像取得方法の選択
     input_method = st.radio("写真の取得方法を選んでください", ["カメラで撮影", "ファイルをアップロード"])
-    image_bytes = st.camera_input("野菜の写真を撮ってください") if input_method == "カメラで撮影" else \
-                  st.file_uploader("野菜の写真をアップロードしてください", type=["png", "jpg", "jpeg"])
+
+    # 画像取得
+    input_container = st.empty()
+    if input_method == "カメラで撮影":
+        image_bytes = input_container.camera_input("野菜の写真を撮ってください", key="camera_input")
+    else:
+        image_bytes = input_container.file_uploader("野菜の写真をアップロードしてください", type=["png", "jpg", "jpeg"], key="file_uploader")
 
     # ゾンビ度計算関数
     def calculate_zombie_score(image_bytes):
@@ -213,11 +218,11 @@ if st.session_state.get("authenticated"):
             return None
 
         # ===== 証拠画像提出 =====
-        proof_method = st.radio("証拠画像の取得方法", ["カメラで撮影", "ファイルをアップロード"])
-        proof_image = (
-            st.camera_input("証拠写真を撮影してください") if proof_method == "カメラで撮影"
-            else st.file_uploader("証拠写真をアップロードしてください", type=["png", "jpg", "jpeg"])
-        )
+        proof_method = st.radio("証拠画像の取得方法", ["カメラで撮影", "ファイルをアップロード"], key="proof_method")
+        if proof_method == "カメラで撮影":
+            proof_image = st.camera_input("証拠写真を撮影してください", key="proof_camera")
+        else:
+            proof_image = st.file_uploader("証拠写真をアップロードしてください", type=["png", "jpg", "jpeg"], key="proof_uploader")
 
         # ===== ミッション達成処理 =====
         if st.button("✅ ミッション達成！"):
