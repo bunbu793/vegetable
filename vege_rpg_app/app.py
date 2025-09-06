@@ -123,6 +123,12 @@ if submitted:
 # 認証後の処理
 # ------------------------
 if st.session_state.get("authenticated"):
+    if "rare_veggies_data" not in st.session_state:
+            st.session_state["rare_veggies_data"] = {
+                "白いナス": {"説明": "希少なナス。特別ミッションで使用可能", "解放済み": False},
+                "紫色のカリフラワー": {"説明": "ポイントボーナス付き", "解放済み": False},
+                "黄金のトマト": {"説明": "称号獲得率UP", "解放済み": False}
+            }
     st.header(f"ようこそ、{st.session_state['username']} さん！")
     st.metric("所持ポイント", f"{st.session_state['points']} pt")
 
@@ -213,15 +219,6 @@ if st.session_state.get("authenticated"):
             "黄金のニンジン": {"説明": "称号獲得率UP", "必要レベル": 3, "効果": {"title_boost": True}},
             "伝説のカボチャ": {"説明": "ポイント+20", "必要レベル": 5, "効果": {"points": 20}}
         }
-
-        # ===== レア野菜データ =====
-        if "rare_veggies_data" not in st.session_state:
-            st.session_state["rare_veggies_data"] = {
-                "白いナス": {"説明": "希少なナス。特別ミッションで使用可能", "解放済み": False},
-                "紫色のカリフラワー": {"説明": "ポイントボーナス付き", "解放済み": False},
-                "黄金のトマト": {"説明": "称号獲得率UP", "解放済み": False}
-            }
-
         # === 野菜選択肢 =====
         # 通常野菜（レシピDBにあるもの）
         base_veggies = list(RECIPE_DB.keys())
