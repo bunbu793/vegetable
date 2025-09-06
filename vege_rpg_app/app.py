@@ -124,174 +124,43 @@ if st.session_state.get("authenticated"):
             if data["解放条件"] in st.session_state["items_owned"]:
                 available_veggies.append(hidden_veg)
 
+        # ===== ミッション表示 =====
         vegetable_name = st.selectbox("撮影した野菜を選んでください", available_veggies)
         mission = generate_mission(vegetable_name, score)
         st.subheader("🎯 今日のミッション")
         st.markdown(mission["mission"])
         st.session_state["current_mission"] = mission
 
-        # ===== 初期化 =====
-        for k, v in {
-            "mission_active": False,
-            "mission_start": None,
-            "time_limit": None,
-            "points": 0,
-            "proof_image": None,
-            "__tick__": 0.0,
-            "__timer_mode__": None
-        }.items():
-            if k not in st.session_state:
-                st.session_state[k] = v
+        # ===== 証拠画像提出 =====
+        proof_method = st.radio("証拠画像の取得方法", ["カメラで撮影", "ファイルをアップロード"])
+        proof_image = (
+            st.camera_input("証拠写真を撮影してください") if proof_method == "カメラで撮影"
+            else st.file_uploader("証拠写真をアップロードしてください", type=["png", "jpg", "jpeg"])
+        )
 
-        # ===== rerun 両対応 =====
-        def safe_rerun():
-            if hasattr(st, "rerun"):
-                st.rerun()
-            elif hasattr(st, "experimental_rerun"):
-                st.experimental_rerun()
+        # ===== ミッション達成 =====
+        if st.button("✅ ミッション達成！"):
+            bonus = 10  # 固定ポイント
+            st.session_state["points"] += bonus
+            mission["timestamp"] = datetime.now().strftime("%Y%m%d%H%M%S")
+            st.session_state["missions_completed"].append(mission)
 
-        # ===== 毎秒更新 =====
-        def tick_every_second(active_flag_key="mission_active", tick_key="__tick__", interval=1.0):
-            if not st.session_state.get(active_flag_key):
-                return
-            now = time.time()
-            last = st.session_state.get(tick_key, 0.0)
-            if now - last >= interval:
-                st.session_state[tick_key] = now
-                safe_rerun()
-
-        # ===== モード選択 =====
-        mode = st.radio("モードを選んでね", ["制限時間モード", "ストップウォッチモード"], key="mode_radio")
-        if st.session_state["__timer_mode__"] != st.session_state["mode_radio"]:
-            st.session_state["mission_active"] = False
-            st.session_state["mission_start"] = None
-            st.session_state["__tick__"] = time.time()
-            st.session_state["__timer_mode__"] = st.session_state["mode_radio"]
-
-        # ==============================
-        # 制限時間モード
-        # ==============================
-        if mode == "制限時間モード":
-            time_limit_minutes = st.number_input("制限時間（分）", min_value=1, max_value=30, value=5)
-
-            if not st.session_state["mission_active"]:
-                if st.button("🚀 ミッション開始！"):
-                    st.session_state["mission_start"] = time.time()
-                    st.session_state["time_limit"] = time_limit_minutes * 60
-                    st.session_state["mission_active"] = True
-            else:
-                tick_every_second()  # ← 時間計算の直前
-                elapsed = time.time() - st.session_state["mission_start"]
-                remaining = max(st.session_state["time_limit"] - elapsed, 0)
-                minutes = int(remaining // 60)
-                seconds = int(remaining % 60)
-
-                if remaining <= 60 and remaining > 0:
-                    st.markdown("<style>.stApp {background-color: #ffcccc;}</style>", unsafe_allow_html=True)
-
-                st.metric("残り時間", f"{minutes}分 {seconds}秒")
-
-                if remaining == 0:
-                    st.markdown("""
-                    <style>
-                    @keyframes blink {0%{opacity:1;}50%{opacity:0;}100%{opacity:1;}}
-                    .blink {animation: blink 1s infinite; color: red; font-size: 32px; font-weight: bold; text-align: center;}
-                    </style>
-                    <div class="blink">💀 GAME OVER 💀</div>
-                    """, unsafe_allow_html=True)
-
-                # 証拠画像提出
-                proof_method = st.radio("証拠画像の取得方法", ["カメラで撮影", "ファイルをアップロード"])
-                st.session_state["proof_image"] = (
-                    st.camera_input("証拠写真を撮影してください") if proof_method == "カメラで撮影"
-                    else st.file_uploader("証拠写真をアップロードしてください", type=["png", "jpg", "jpeg"])
+            # 証拠画像保存（命名規則: 野菜名_スコア_タイムスタンプ.jpg）
+            if proof_image:
+                proof_dir = f"user_profiles/{username}_proofs"
+                os.makedirs(proof_dir, exist_ok=True)
+                proof_path = os.path.join(
+                    proof_dir,
+                    f"{vegetable_name}_{score}_{mission['timestamp']}.jpg"
                 )
+                with open(proof_path, "wb") as f:
+                    f.write(proof_image.getbuffer())
+                st.success("📸 証拠画像を保存しました！")
 
-                if st.button("✅ ミッション達成！"):
-                    bonus = 10 if remaining > 0 else 0
-                    if bonus > 0:
-                        st.success("⏱ 時間内クリア！+10pt")
-                        st.balloons()
-                    else:
-                        st.error("💀 時間切れ！ボーナスなし")
+            st.success(f"🎁 報酬ポイント +{bonus}pt（合計：{st.session_state['points']}pt）")
+            st.balloons()
 
-                    st.session_state["points"] += bonus
-                    mission["timestamp"] = datetime.now().strftime("%Y%m%d%H%M%S")
-                    st.session_state["missions_completed"].append(mission)
-
-                    # 証拠画像保存（命名規則）
-                    proof_image = st.session_state.get("proof_image")
-                    if proof_image:
-                        proof_dir = f"user_profiles/{username}_proofs"
-                        os.makedirs(proof_dir, exist_ok=True)
-                        proof_path = os.path.join(
-                            proof_dir,
-                            f"{vegetable_name}_{score}_{mission['timestamp']}.jpg"
-                        )
-                        with open(proof_path, "wb") as f:
-                            f.write(proof_image.getbuffer())
-                        st.success("📸 証拠画像を保存しました！")
-
-                    st.session_state["mission_active"] = False
-
-        # ==============================
-        # ストップウォッチモード
-        # ==============================
-        elif mode == "ストップウォッチモード":
-            if not st.session_state["mission_active"]:
-                if st.button("🚀 ミッション開始！"):
-                    st.session_state["mission_start"] = time.time()
-                    st.session_state["mission_active"] = True
-            else:
-                tick_every_second()  # ← 時間計算の直前
-                elapsed = time.time() - st.session_state["mission_start"]
-                minutes = int(elapsed // 60)
-                seconds = int(elapsed % 60)
-                st.metric("経過時間", f"{minutes}分 {seconds}秒")
-
-                # 証拠画像提出
-                proof_method = st.radio("証拠画像の取得方法", ["カメラで撮影", "ファイルをアップロード"])
-                st.session_state["proof_image"] = (
-                    st.camera_input("証拠写真を撮影してください") if proof_method == "カメラで撮影"
-                    else st.file_uploader("証拠写真をアップロードしてください", type=["png", "jpg", "jpeg"])
-                )
-
-                if st.button("✅ ミッション達成！"):
-                    if elapsed <= 60:
-                        bonus = 15
-                        st.success("🥇 超高速クリア！+15pt")
-                        st.balloons()
-                    elif elapsed <= 180:
-                        bonus = 10
-                        st.success("⏱ 早い！+10pt")
-                        st.balloons()
-                    elif elapsed <= 300:
-                        bonus = 5
-                        st.info("👍 ナイス！+5pt")
-                        st.snow()
-                    else:
-                        bonus = 2
-                        st.warning("お疲れ！+2pt")
-
-                    st.session_state["points"] += bonus
-                    mission["timestamp"] = datetime.now().strftime("%Y%m%d%H%M%S")
-                    st.session_state["missions_completed"].append(mission)
-
-                    # 証拠画像保存（命名規則）
-                    proof_image = st.session_state.get("proof_image")
-                    if proof_image:
-                        proof_dir = f"user_profiles/{username}_proofs"
-                        os.makedirs(proof_dir, exist_ok=True)
-                        proof_path = os.path.join(
-                            proof_dir,
-                            f"{vegetable_name}_{score}_{mission['timestamp']}.jpg"
-                        )
-                        with open(proof_path, "wb") as f:
-                            f.write(proof_image.getbuffer())
-                        st.success("📸 証拠画像を保存しました！")
-
-                    st.session_state["mission_active"] = False
-            # セーブデータ保存
+            # ===== セーブデータ保存 =====
             profile_path = f"user_profiles/{username}.json"
             profile = {
                 "username": username,
@@ -305,8 +174,8 @@ if st.session_state.get("authenticated"):
             with open(profile_path, "w", encoding="utf-8") as f:
                 json.dump(profile, f, ensure_ascii=False, indent=2)
             st.success("💾 セーブデータを保存しました！")
-            
-            # 称号獲得チェック
+
+            # ===== 称号獲得チェック =====
             new_titles = check_titles(st.session_state["missions_completed"], st.session_state["titles"])
             for 称号 in new_titles:
                 進化元 = None
@@ -319,7 +188,6 @@ if st.session_state.get("authenticated"):
                 st.session_state["titles"].append(称号)
 
                 if 進化元:
-                    # 🌟 進化演出
                     st.markdown(f"""
                     <div style="text-align:center; font-size:28px; color:gold;">
                     🌟 称号進化！<br><br>
@@ -327,15 +195,12 @@ if st.session_state.get("authenticated"):
                     </div>
                     """, unsafe_allow_html=True)
                     st.balloons()
-
-                    # 画像表示（進化前→進化後）
                     old_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[進化元]['画像ファイル名']}"
                     new_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[称号]['画像ファイル名']}"
                     st.image(old_url, caption=f"旧称号：{進化元}", width=120)
                     st.image(new_url, caption=f"新称号：{称号}", width=150)
                     st.markdown(f"📝 {称号データ[称号]['説明']}")
                 else:
-                    # 通常の称号獲得演出
                     st.success(f"🏆 称号獲得：{称号}")
                     st.markdown(称号データ[称号]["説明"])
                     image_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[称号]['画像ファイル名']}"
