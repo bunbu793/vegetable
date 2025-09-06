@@ -167,15 +167,28 @@ if st.session_state.get("authenticated"):
         vegetable_name = st.selectbox("撮影した野菜を選んでください", available_veggies)
 
         # ===== ミッション生成 =====
-        def generate_mission(vegetable_name):
+        def generate_mission(vegetable_name, score):
             if vegetable_name in st.session_state["rare_veggies_data"]:
-                return f"🌟 特別ミッション！{vegetable_name}を使って料理を作れ！", 20
+                bonus = 20 + int(score // 10)  # ゾンビ度に応じてボーナス増加
+                return {
+                    "text": f"🌟 特別ミッション！{vegetable_name}を使って料理を作れ！",
+                    "bonus": bonus,
+                    "recipe": f"{vegetable_name}のスペシャル料理"
+                }
             else:
-                return f"{vegetable_name}を使った料理を作れ！", 10
+                bonus = 10 + int(score // 20)
+                return {
+                    "text": f"{vegetable_name}を使った料理を作れ！",
+                    "bonus": bonus,
+                    "recipe": f"{vegetable_name}の定番料理"
+                }
+        if score is not None:
+            mission_info = generate_mission(vegetable_name, score)
+            mission_text = mission_info["text"]
+            base_bonus = mission_info["bonus"]
 
-        mission_text, base_bonus = generate_mission(vegetable_name)
-        st.subheader("🎯 今日のミッション")
-        st.markdown(mission_text)
+            st.subheader("🎯 今日のミッション")
+            st.markdown(mission_text)
 
         # ===== レア野菜ミニゲーム =====
         def rare_veggie_minigame(vegetable_name, base_bonus):
