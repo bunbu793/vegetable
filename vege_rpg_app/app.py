@@ -251,7 +251,7 @@ if st.session_state.get("authenticated"):
                 "rare_veggies_data": st.session_state["rare_veggies_data"]
             }
             os.makedirs(os.path.dirname(profile_path), exist_ok=True)
-            with open(profile_path, "w", encoding="utf-8") as f:
+            with open(f"user_profiles/{username}.json", "w", encoding="utf-8") as f:
                 json.dump(profile, f, ensure_ascii=False, indent=2)
             st.success("💾 セーブデータを保存しました！")
 
