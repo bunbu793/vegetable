@@ -16,13 +16,13 @@ import random
 # ------------------------
 def explain_zombie_reason(score):
     if score < 30:
-        return "画像のほとんどが明るく鮮やかで、腐敗の兆候は見られませんでした。"
+        return "色鮮やかで水分量も十分。腐敗の兆候なし。"
     elif score < 60:
-        return "一部に暗くくすんだ領域があり、腐敗が始まりつつあると判断されました。"
+        return "少し色あせてきており、水分が減少傾向。"
     elif score < 80:
-        return "画像の多くに暗さと低彩度が見られ、腐敗が進行している状態です。"
+        return "明らかな変色と乾燥が見られ、腐敗が進行中。"
     else:
-        return "画像全体が暗く、色も失われており、完全にゾンビ化していると判定されました。"
+        return "色が黒ずみ、質感も悪化。完全にゾンビ化しています。"
 
 # ------------------------
 # ページ設定
@@ -208,36 +208,42 @@ if st.session_state.get("authenticated"):
 
         # ===== ミッション達成処理 =====
         if st.button("✅ ミッション達成！"):
-            bonus = base_bonus
-            mission_info = generate_mission(vegetable_name, score)
-            recipe = mission_info["recipe"]
-            mission_data = {
-                "vegetable": vegetable_name,
-                "zombie_score": score,
-                "recipe": recipe,
-                "timestamp": datetime.now().strftime("%Y%m%d%H%M%S")
-            }
+            if vegetable_name and score is not None:
+                mission_info = generate_mission(vegetable_name, score)
+                recipe = mission_info["recipe"]
+                timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
-            if vegetable_name in st.session_state["rare_veggies_data"]:
-                result = rare_veggie_minigame(vegetable_name, base_bonus)
-                if result is not None:
-                    bonus = result
-            else:
-                st.session_state["points"] += base_bonus
-                st.success(f"🎁 報酬ポイント +{base_bonus}pt（合計：{st.session_state['points']}pt）")
-                st.balloons()
+                mission_data = {
+                    "vegetable": vegetable_name,
+                    "zombie_score": score,
+                    "recipe": recipe,
+                    "timestamp": timestamp
+                }
 
-            # 証拠画像保存
-            if proof_image:
-                proof_dir = f"user_profiles/{username}_proofs"
-                os.makedirs(proof_dir, exist_ok=True)
-                proof_path = os.path.join(
-                    proof_dir,
-                    f"{vegetable_name}_{bonus}_{datetime.now().strftime('%Y%m%d%H%M%S')}.jpg"
-                )
-                with open(proof_path, "wb") as f:
-                    f.write(proof_image.getbuffer())
-                st.success("📸 証拠画像を保存しました！")
+                st.session_state["missions_completed"].append(mission_data)
+
+                # レア野菜ミニゲーム
+                bonus = base_bonus
+                if vegetable_name in st.session_state["rare_veggies_data"]:
+                    result = rare_veggie_minigame(vegetable_name, base_bonus)
+                    if result is not None:
+                        bonus = result
+                else:
+                    st.session_state["points"] += base_bonus
+                    st.success(f"🎁 報酬ポイント +{base_bonus}pt（合計：{st.session_state['points']}pt）")
+                    st.balloons()
+
+                # 証拠画像保存
+                if proof_image:
+                    proof_dir = f"user_profiles/{username}_proofs"
+                    os.makedirs(proof_dir, exist_ok=True)
+                    proof_path = os.path.join(
+                        proof_dir,
+                        f"{vegetable_name}_{score}_{timestamp}.jpg"
+                    )
+                    with open(proof_path, "wb") as f:
+                        f.write(proof_image.getbuffer())
+                    st.success("📸 証拠画像を保存しました！")
 
             # セーブデータ保存
             profile_path = f"user_profiles/{username}.json"
@@ -250,7 +256,8 @@ if st.session_state.get("authenticated"):
                 "items_owned": st.session_state["items_owned"],
                 "level": st.session_state["level"],
                 "exp": st.session_state["exp"],
-                "rare_veggies_data": st.session_state["rare_veggies_data"]
+                "rare_veggies_data": st.session_state["rare_veggies_data"],
+                "proof_path": proof_path if proof_image else None
             }
             os.makedirs(os.path.dirname(profile_path), exist_ok=True)
             with open(f"user_profiles/{username}.json", "w", encoding="utf-8") as f:
@@ -304,6 +311,5 @@ if st.session_state.get("authenticated"):
                 st.subheader("📜 過去のミッション達成履歴")
                 for i, m in enumerate(st.session_state["missions_completed"], 1):
                     st.markdown(f"{i}. {m['vegetable']} → {m['recipe']}（ゾンビ度：{m['zombie_score']}%）")
-                    "user_profiles/{username}_proofs/{m['vegetable']}_{m['zombie_score']}_{m['timestamp']}.jpg"
-                    if os.path.exists(proof_path):
-                        st.image(proof_path, caption="証拠画像", width=200)
+                    if m.get("proof_path") and os.path.exists(m["proof_path"]):
+                        st.image(m["proof_path"], caption="証拠画像", width=200)
