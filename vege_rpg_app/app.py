@@ -200,12 +200,18 @@ if st.session_state.get("authenticated"):
             }
 
         # === 野菜選択肢 =====
+        # 通常野菜（レシピDBにあるもの）
         base_veggies = list(RECIPE_DB.keys())
+
+        # 解放済みのレア野菜だけ抽出
         rare_veggies_unlocked = [
             name for name, data in st.session_state["rare_veggies_data"].items()
-            if data["解放済み"]
+            if data.get("解放済み", False)
         ]
+
+        # 選択肢として表示する野菜一覧
         available_veggies = base_veggies + rare_veggies_unlocked
+
 
         # ===== 野菜選択UI =====
         vegetable_name = st.selectbox("撮影した野菜を選んでください", available_veggies)
