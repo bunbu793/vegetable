@@ -155,8 +155,8 @@ if st.session_state.get("authenticated"):
                 "黄金のトマト": {"説明": "称号獲得率UP", "解放済み": False}
             }
 
-        # ===== 野菜選択肢 =====
-        base_veggies = ["トマト", "ナス", "キャベツ"]
+        # === 野菜選択肢 =====
+        base_veggies = list(RECIPE_DB.keys())
         rare_veggies_unlocked = [
             name for name, data in st.session_state["rare_veggies_data"].items()
             if data["解放済み"]
