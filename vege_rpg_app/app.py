@@ -180,7 +180,7 @@ if st.session_state.get("authenticated"):
                     st.session_state["time_limit"] = time_limit_minutes * 60
                     st.session_state["mission_active"] = True
             else:
-                tick_every_second()
+                tick_every_second()  # ← 時間計算の直前
                 elapsed = time.time() - st.session_state["mission_start"]
                 remaining = max(st.session_state["time_limit"] - elapsed, 0)
                 minutes = int(remaining // 60)
@@ -208,12 +208,11 @@ if st.session_state.get("authenticated"):
                 )
 
                 if st.button("✅ ミッション達成！"):
-                    if remaining > 0:
-                        bonus = 10
+                    bonus = 10 if remaining > 0 else 0
+                    if bonus > 0:
                         st.success("⏱ 時間内クリア！+10pt")
                         st.balloons()
                     else:
-                        bonus = 0
                         st.error("💀 時間切れ！ボーナスなし")
 
                     st.session_state["points"] += bonus
@@ -244,7 +243,7 @@ if st.session_state.get("authenticated"):
                     st.session_state["mission_start"] = time.time()
                     st.session_state["mission_active"] = True
             else:
-                tick_every_second()
+                tick_every_second()  # ← 時間計算の直前
                 elapsed = time.time() - st.session_state["mission_start"]
                 minutes = int(elapsed // 60)
                 seconds = int(elapsed % 60)
