@@ -26,6 +26,13 @@ def save_ranking_entry(username, points):
     with open(history_path, "w", encoding="utf-8") as f:
         json.dump(history, f, ensure_ascii=False, indent=2)
 
+def clear_ranking_history():
+    history_path = "data/ranking_history.json"
+    if os.path.exists(history_path):
+        with open(history_path, "w", encoding="utf-8") as f:
+            json.dump([], f, ensure_ascii=False, indent=2)
+
+
 # 期間別ランキング抽出
 def get_period_ranking(period="week"):
     history = load_ranking_history()
@@ -82,3 +89,10 @@ with st.form("add_entry"):
         save_ranking_entry(name, pts)
         st.success("ランキング履歴に追加しました！")
 st.write("ℹ️ 注意：ランキングは手動で追加する形式です。実際のゲームプレイに連動していません。")
+
+st.write("📜 現在の履歴データ:", load_ranking_history())
+# ランキング履歴削除ボタン
+if st.button("🗑️ ランキング履歴をすべて削除する"):
+    clear_ranking_history()
+    st.success("ランキング履歴をすべて削除しました！")
+    st.experimental_rerun()
