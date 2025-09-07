@@ -193,6 +193,8 @@ if st.session_state.get("authenticated"):
         # ===== ミッション生成 =====
         def generate_mission(vegetable_name, score):
             bonus = 10 + int(score // 20)
+            recipes = RECIPE_DB.get(vegetable_name, [f"{vegetable_name}の定番料理"])
+            recipe = random.choice(recipes) if isinstance(recipes, list) else recipes
             return {
                 "text": f"{vegetable_name}を使って、『{recipe}』を作れ！",
                 "bonus": bonus,
