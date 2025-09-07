@@ -29,6 +29,27 @@ available_veggies = [
 
 seasonings = ["なし", "塩", "砂糖", "醤油", "スパイス", "オリーブオイル"]
 
+def show_effects(result_name):
+    if result_name == "失敗作":
+
+        #===どくろの雨、画面横転===# 
+
+        rain(emoji = "💀", font_size=40, falling_speed = 3, animation_length ="short")
+        st.markdown("""
+        <style>
+        body {barckground-color:#1a1a1a; color:white;}
+        
+        </style>
+        """, unsafe_allow_html=True)
+    elif result_name == "スパイスミラクル":
+        # 🎆花火＋🍅雨＋魔法アニメーション
+        rain(emoji="🎆", font_size=50, falling_speed=4, animation_length="short")
+        rain(emoji="🍅", font_size=40, falling_speed=5, animation_length="short")
+        st_lottie(load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_touohxv0.json"), height=400)
+    else:
+        # 通常成功 → ✨だけ
+        rain(emoji="✨", font_size=40, falling_speed=4, animation_length="short")
+
 def consume_veggies(v1, v2, v3):
     used = []
     for v in [v1, v2, v3]:
