@@ -4,11 +4,14 @@ st.set_page_config(page_title="野菜クラフト工房", page_icon="🧪")
 if "points" not in st.session_state:
     st.session_state["points"] = 0
 if "money" not in st.session_state:
-    st.session_state["money"] = 100  # 初期所持金
+    st.session_state["money"] = 1000  # 初期所持金
+
+# 所持野菜と調味料の初期化
 if "owned_veggies" not in st.session_state:
-    st.session_state["owned_veggies"] = []
+    st.session_state["owned_veggies"] = ["トマト", "ナス", "チーズ"]
 if "owned_seasonings" not in st.session_state:
-    st.session_state["owned_seasonings"] = []
+    st.session_state["owned_seasonings"] = ["塩"]
+
 
 available_veggies = [
     "トマト", "ナス", "キャベツ", "ニンジン", "ジャガイモ", "ピーマン",
@@ -61,7 +64,7 @@ def craft_veggies(v1, v2, v3, seasoning):
 
 st.subheader("🧪 野菜クラフト工房")
 st.metric("所持ポイント", f"{st.session_state['points']} pt")
-st.metric("所持マネー", f"¥{st.session_state['money']}")
+st.metric("所持マネー", f"💰{st.session_state['money']}")
 
 veggie1 = st.selectbox("材料①を選んでください", st.session_state["owned_veggies"])
 veggie2 = st.selectbox("材料②を選んでください", st.session_state["owned_veggies"])
