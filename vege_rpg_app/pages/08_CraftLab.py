@@ -64,7 +64,7 @@ def craft_veggies(v1, v2, v3, seasoning):
 
 st.subheader("🧪 野菜クラフト工房")
 st.metric("所持ポイント", f"{st.session_state['points']} pt")
-st.metric("所持マネー", f"💰{st.session_state['money']}")
+st.metric("所持マネー", f"🪙{st.session_state['money']}マネー")
 
 veggie1 = st.selectbox("材料①を選んでください", st.session_state["owned_veggies"])
 veggie2 = st.selectbox("材料②を選んでください", st.session_state["owned_veggies"])
