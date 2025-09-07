@@ -38,13 +38,13 @@ def load_lottie_url(url):
 
 def show_effects(result_name):
     if result_name == "失敗作":
-        # 💀ドクロの雨＋魔法アニメーション（暴走演出）
-        rain(emoji="💀", font_size=40, falling_speed=3, animation_length="short")
+        st.markdown("💥 **呪文が暴走した…！魔力が制御不能に！** 💥")
+        rain(emoji="💀", font_size=50, falling_speed=3, animation_length="short")
         st.markdown("""
         <style>
         [data-testid="stAppViewContainer"] {
-            background-color: #1a1a1a;
-            color: white;
+            background-color: #2b001a;
+            color: #ffdddd;
         }
         </style>
         """, unsafe_allow_html=True)
