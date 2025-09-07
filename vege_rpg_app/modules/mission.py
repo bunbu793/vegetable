@@ -36,17 +36,6 @@ RECIPE_DB = {
     "サツマイモ": ["サツマイモの焼き芋", "サツマイモのサラダ", "サツマイモのスイートポテト"],
     "アスパラガス": ["アスパラガスの炒め物", "アスパラガスのサラダ", "アスパラガスのグリル"]
 }
-
-HIDDEN_VEGETABLES = {
-    "アボカド": {
-        "解放条件": "レア野菜解放券",
-        "レシピ": ["アボカドサラダ", "アボカドディップ"]
-    },
-    "ケール": {
-        "解放条件": "レア野菜解放券",
-        "レシピ": ["ケールスムージー", "ケール炒め"]
-    }
-}
 # ミッション生成関数
 def generate_mission(vegetable_name, zombie_score):
     urgency = ""
@@ -57,11 +46,8 @@ def generate_mission(vegetable_name, zombie_score):
     else:
         urgency = "🧘‍♂️ のんびりミッション"
 
-    # レシピ選択（通常 or 隠し）
-    if vegetable_name in HIDDEN_VEGETABLES:
-        recipe = random.choice(HIDDEN_VEGETABLES[vegetable_name]["レシピ"])
-    else:
-        recipe = random.choice(RECIPE_DB.get(vegetable_name, ["未知のレシピ"]))
+    # レシピ選択（通常野菜のみ）
+    recipe = random.choice(RECIPE_DB.get(vegetable_name, ["未知のレシピ"]))
 
     reward_points = REWARD_POINTS.get(vegetable_name, 1)
     mission_text = f"{urgency} 『{recipe}』を作れ！材料：{vegetable_name}（ゾンビ化度：{zombie_score}%）"
