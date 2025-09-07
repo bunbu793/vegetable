@@ -38,8 +38,7 @@ def load_lottie_url(url):
 
 def show_effects(result_name):
     if result_name == "失敗作":
-        st.markdown("💥 **呪文が暴走した…！魔力が制御不能に！** 💥")
-        rain(emoji="💀", font_size=50, falling_speed=3, animation_length="short")
+        rain(emoji="💀", font_size=40, falling_speed=3, animation_length="short")
         st.markdown("""
         <style>
         [data-testid="stAppViewContainer"] {
@@ -49,9 +48,12 @@ def show_effects(result_name):
         </style>
         """, unsafe_allow_html=True)
 
-        # 魔法暴走アニメーション（Lottie）
-        aexplosion_url = "https://assets10.lottiefiles.com/packages/lf20_VtDDsUbgOD.json"
+        # 🔥 爆発アニメーションのURLを定義
+        explosion_url = "https://assets10.lottiefiles.com/packages/lf20_VtDDsUbgOD.json"
         animation_data = load_lottie_url(explosion_url)
+        if animation_data:
+            st_lottie(animation_data, height=400)
+
 
         if animation_data:
             st_lottie(animation_data, speed=1, height=400)
