@@ -190,7 +190,7 @@ if st.session_state.get("authenticated"):
             return {
                 "text": f"{vegetable_name}を使って、『{recipe}』を作れ！",
                 "bonus": bonus,
-                "recipe": f"{vegetable_name}の定番料理"
+                "recipe": recipe
             }
 
         if score is not None:
