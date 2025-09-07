@@ -44,8 +44,10 @@ def show_effects(result_name):
         rain(emoji = "💀", font_size=40, falling_speed = 3, animation_length ="short")
         st.markdown("""
         <style>
-        body {background-color:#1a1a1a; color:white;}
-        
+        [data-testid="stAppViewContainer"] {
+            background-color: #1a1a1a;
+            color: white;
+        }
         </style>
         """, unsafe_allow_html=True)
     elif result_name == "スパイスミラクル":
@@ -184,3 +186,4 @@ if st.button("クラフト開始！"):
                 )
         else:
             st.warning("😢 合成失敗…素材はそのまま残ってるよ。次こそリベンジだ！")
+            show_effects("失敗作")
