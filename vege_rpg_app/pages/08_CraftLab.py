@@ -93,15 +93,16 @@ st.metric("所持ポイント", f"{st.session_state['points']} pt")
 st.metric("所持マネー", f"🪙{st.session_state['money']}マネー")
 def get_available_veggies():
     return [f"{v}（x{count}）" for v, count in st.session_state["owned_veggies"].items() if count > 0]
+
+def extract_name(label):
+    if isinstance(label, str):
+        return label.split("（")[0]
+
 veggie_options = get_available_veggies()
 if veggie_options:
     veggie1_label = st.selectbox("材料①を選んでください", veggie_options)
     veggie2_label = st.selectbox("材料②を選んでください", veggie_options)
     veggie3_label = st.selectbox("材料③を選んでください", veggie_options)
-
-    def extract_name(label):
-        if isinstance(label, str):
-            return label.split("（")[0]
 
     veggie1 = extract_name(veggie1_label)
     veggie2 = extract_name(veggie2_label)
