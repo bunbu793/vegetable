@@ -29,16 +29,6 @@ available_veggies = [
 
 seasonings = ["なし", "塩", "砂糖", "醤油", "スパイス", "オリーブオイル"]
 
-
-# Lottieアニメーションを取得（花火風）
-def load_lottie_url(url):
-    r = requests.get(url)
-    if r.status_code != 200:
-        return None
-    return r.json()
-
-lottie_fireworks = load_lottie_url("https://lottie.host/6e1e3a3e-7f3a-4f2a-9f3e-4f3e3f3e3f3e/3f3e3f3e.json")
-
 def consume_veggies(v1, v2, v3):
     used = []
     for v in [v1, v2, v3]:
@@ -154,7 +144,14 @@ if st.button("クラフト開始！"):
                     "effect": result["effect"]
                 })
 
-                st_lottie(lottie_fireworks, speed=1, height=400, key="fireworks")
+                rain(
+                    emoji = "✨",
 
+                    font_size = 54,
+
+                    falling_speed = 5,
+                    
+                    animation_length = "short"
+                )
         else:
             st.warning("😢 合成失敗…素材はそのまま残ってるよ。次こそリベンジだ！")
