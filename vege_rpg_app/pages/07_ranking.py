@@ -90,9 +90,12 @@ with st.form("add_entry"):
         st.success("ランキング履歴に追加しました！")
 st.write("ℹ️ 注意：ランキングは手動で追加する形式です。実際のゲームプレイに連動していません。")
 
-st.write("📜 現在の履歴データ:", load_ranking_history())
-# ランキング履歴削除ボタン
+if "ranking_cleared" not in st.session_state:
+    st.session_state["ranking_cleared"] = False
+
 if st.button("🗑️ ランキング履歴をすべて削除する"):
     clear_ranking_history()
+    st.session_state["ranking_cleared"] = True
+
+if st.session_state["ranking_cleared"]:
     st.success("ランキング履歴をすべて削除しました！")
-    st.experimental_rerun()
