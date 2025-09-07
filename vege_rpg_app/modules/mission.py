@@ -1,5 +1,4 @@
 import random
-from modules.mission import RECIPE_DB, HIDDEN_VEGETABLES
 
 # 野菜ごとの報酬ポイント設定
 REWARD_POINTS = {

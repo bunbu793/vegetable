@@ -1,6 +1,6 @@
 from collections import defaultdict
 import streamlit as st
-from modules.mission import RECIPE_DB, HIDDEN_VEGETABLES  # ← 必須インポート
+from modules.mission import RECIPE_DB
 
 st.set_page_config(page_title="野菜図鑑", page_icon="🥬")
 st.title("🥬 野菜図鑑")
@@ -13,11 +13,6 @@ if "items_owned" not in st.session_state:
 
 # 図鑑表示用の野菜一覧
 all_vegetables = list(RECIPE_DB.keys())
-
-# 隠し野菜の解放チェック
-for hidden_veg in HIDDEN_VEGETABLES:
-    if hidden_veg in st.session_state["items_owned"]:
-        all_vegetables.append(hidden_veg)
 
 # --- データがない場合 ---
 if not st.session_state["missions_completed"]:

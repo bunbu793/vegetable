@@ -6,7 +6,7 @@ import os
 import json
 from datetime import datetime
 from modules.titles import 称号データ, get_title_info, check_titles
-from modules.mission import generate_mission, RECIPE_DB, HIDDEN_VEGETABLES
+from modules.mission import generate_mission, RECIPE_DB
 import time ,os
 from datetime import datetime
 import random
@@ -162,10 +162,6 @@ if st.session_state.get("authenticated"):
 
         # 野菜選択肢（隠し野菜含む）
         available_veggies = list(RECIPE_DB.keys())
-        for hidden_veg, data in HIDDEN_VEGETABLES.items():
-            if data["解放条件"] in st.session_state["items_owned"]:
-                available_veggies.append(hidden_veg)
-
         # ===== 初期化 =====
         for k, v in {
             "points": 0,
