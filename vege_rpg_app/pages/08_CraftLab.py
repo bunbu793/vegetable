@@ -112,28 +112,31 @@ seasoning_label = st.selectbox("調味料を選んでください", get_availabl
 seasoning = extract_name(seasoning_label)
 
 CRAFT_COST = 50  # 3素材クラフトはコスト高め
-
 if st.button("クラフト開始！"):
     if st.session_state["money"] < CRAFT_COST:
         st.error("💸 マネーが足りません！クラフトできません。")
     else:
         result = craft_veggies(veggie1, veggie2, veggie3, seasoning)
-        st.success(f"🎉 合成成功！{result['name']} を作成しました！")
-        st.markdown(f"📝 効果：{result['effect']}")
 
-        st.session_state["money"] -= CRAFT_COST
-        st.session_state["points"] += result["points"]
-        st.session_state["money"] += result["money"]
+        if result["name"] != "失敗作":
+            if consume_veggies(veggie1, veggie2, veggie3) and consume_seasoning(seasoning):
+                st.success(f"🎉 合成成功！{result['name']} を作成したぜ！")
+                st.markdown(f"📝 効果：{result['effect']}")
 
-        if "craft_history" not in st.session_state:
-            st.session_state["craft_history"] = []
+                st.session_state["money"] -= CRAFT_COST
+                st.session_state["points"] += result["points"]
+                st.session_state["money"] += result["money"]
 
-        # 合成成功後に履歴追加
-        st.session_state["craft_history"].append({
-            "name": result["name"],
-            "veggies": [veggie1, veggie2, veggie3],
-            "seasoning": seasoning,
-            "effect": result["effect"]
-        })
+                if "craft_history" not in st.session_state:
+                    st.session_state["craft_history"] = []
 
-        st.balloons()
+                st.session_state["craft_history"].append({
+                    "name": result["name"],
+                    "veggies": [veggie1, veggie2, veggie3],
+                    "seasoning": seasoning,
+                    "effect": result["effect"]
+                })
+
+                st.balloons()
+        else:
+            st.warning("😢 合成失敗…素材はそのまま残ってるよ。次こそリベンジだ！")
