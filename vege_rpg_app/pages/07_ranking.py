@@ -14,6 +14,18 @@ def load_ranking_history():
     with open(history_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
+def save_ranking_entry(username, points):
+    history_path = "data/ranking_history.json"
+    os.makedirs("data", exist_ok=True)
+    history = load_ranking_history()
+    history.append({
+        "username": username,
+        "points": points,
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    })
+    with open(history_path, "w", encoding="utf-8") as f:
+        json.dump(history, f, ensure_ascii=False, indent=2)
+
 # 期間別ランキング抽出
 def get_period_ranking(period="week"):
     history = load_ranking_history()
@@ -59,3 +71,13 @@ show_ranking("📅 今日のランキング", get_period_ranking("day"), current
 show_ranking("📅 今週のランキング", get_period_ranking("week"), current_user)
 show_ranking("🗓️ 今月のランキング", get_period_ranking("month"), current_user)
 show_ranking("📆 今年のランキング", get_period_ranking("year"), current_user)
+
+# ランキング履歴追加フォーム
+with st.form("add_entry"):
+    st.subheader("📝 ランキング履歴に追加")
+    name = st.text_input("ユーザー名")
+    pts = st.number_input("ポイント", min_value=0)
+    submitted = st.form_submit_button("ランキングに追加")
+    if submitted:
+        save_ranking_entry(name, pts)
+        st.success("ランキング履歴に追加しました！")

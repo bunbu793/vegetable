@@ -218,7 +218,7 @@ if st.session_state.get("authenticated"):
             if vegetable_name and score is not None:
                 mission_info = generate_mission(vegetable_name, score)
                 recipe = mission_info["recipe"]
-                timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
                 # ✅ ここで証拠画像保存と proof_path の定義をする
                 proof_path = None  # 初期化しておくと安全
