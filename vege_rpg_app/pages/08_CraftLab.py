@@ -50,9 +50,12 @@ def show_effects(result_name):
         """, unsafe_allow_html=True)
 
         # 魔法暴走アニメーション（Lottie）
-        animation_data = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_VtDDsUbgOD.json")
+        aexplosion_url = "https://assets10.lottiefiles.com/packages/lf20_VtDDsUbgOD.json"
+        animation_data = load_lottie_url(explosion_url)
+
         if animation_data:
-            st_lottie(animation_data, height=400)
+            st_lottie(animation_data, speed=1, height=400)
+
 
 
     elif result_name == "スパイスミラクル":
