@@ -8,10 +8,15 @@ if "money" not in st.session_state:
 
 # 所持野菜と調味料の初期化
 if "owned_veggies" not in st.session_state:
-    st.session_state["owned_veggies"] = ["トマト", "ナス", "チーズ"]
+    st.session_state["owned_veggies"] = {
+        "トマト": 1,
+        "ナス": 1,
+        "チーズ": 1
+    }
 if "owned_seasonings" not in st.session_state:
-    st.session_state["owned_seasonings"] = ["塩"]
-
+    st.session_state["owned_seasonings"] = {
+        "塩": 1
+    }
 
 available_veggies = [
     "トマト", "ナス", "キャベツ", "ニンジン", "ジャガイモ", "ピーマン",
@@ -21,6 +26,27 @@ available_veggies = [
 ]
 
 seasonings = ["なし", "塩", "砂糖", "醤油", "スパイス", "オリーブオイル"]
+
+def consume_veggies(v1, v2, v3):
+    used = []
+    for v in [v1, v2, v3]:
+        if st.session_state["owned_veggies"].get(v, 0) > 0:
+            st.session_state["owned_veggies"][v] -= 1
+            used.append(v)
+        else:
+            st.error(f"❌ {v} の在庫が足りません！")
+            return False
+    st.info("🧺 使用した素材：" + "、".join([f"{v}（残りx{st.session_state['owned_veggies'][v]}）" for v in used]))
+    return True
+
+def consume_seasoning(s):
+    if st.session_state["owned_seasonings"].get(s, 0) > 0:
+        st.session_state["owned_seasonings"][s] -= 1
+        st.info(f"🧂 使用した調味料：{s}（残りx{st.session_state['owned_seasonings'][s]}）")
+        return True
+    else:
+        st.error(f"❌ 調味料「{s}」の在庫が足りません！")
+        return False
 
 def craft_veggies(v1, v2, v3, seasoning):
     recipes = {
@@ -65,11 +91,25 @@ def craft_veggies(v1, v2, v3, seasoning):
 st.subheader("🧪 野菜クラフト工房")
 st.metric("所持ポイント", f"{st.session_state['points']} pt")
 st.metric("所持マネー", f"🪙{st.session_state['money']}マネー")
+def get_available_veggies():
+    return [f"{v}（x{count}）" for v, count in st.session_state["owned_veggies"].items() if count > 0]
 
-veggie1 = st.selectbox("材料①を選んでください", st.session_state["owned_veggies"])
-veggie2 = st.selectbox("材料②を選んでください", st.session_state["owned_veggies"])
-veggie3 = st.selectbox("材料③を選んでください", st.session_state["owned_veggies"])
-seasoning = st.selectbox("調味料を選んでください", st.session_state["owned_seasonings"])
+veggie1_label = st.selectbox("材料①を選んでください", get_available_veggies())
+veggie2_label = st.selectbox("材料②を選んでください", get_available_veggies())
+veggie3_label = st.selectbox("材料③を選んでください", get_available_veggies())
+
+def extract_name(label):
+    return label.split("（")[0]
+
+veggie1 = extract_name(veggie1_label)
+veggie2 = extract_name(veggie2_label)
+veggie3 = extract_name(veggie3_label)
+
+def get_available_seasonings():
+    return [f"{s}（x{count}）" for s, count in st.session_state["owned_seasonings"].items() if count > 0]
+
+seasoning_label = st.selectbox("調味料を選んでください", get_available_seasonings())
+seasoning = extract_name(seasoning_label)
 
 CRAFT_COST = 50  # 3素材クラフトはコスト高め
 

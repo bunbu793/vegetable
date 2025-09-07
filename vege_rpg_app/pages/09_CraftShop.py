@@ -22,23 +22,26 @@ seasoning_store = {
 
 st.subheader("🥦 野菜を購入")
 for veggie, price in veggie_store.items():
-    if st.button(f"{veggie} を ¥{price} で購入"):
+    if st.button(f"{veggie} を購入（🪙{price}）マネー"):
         if st.session_state["money"] >= price:
-            st.session_state["available_veggies"].append(veggie)
             st.session_state["money"] -= price
+            if veggie not in st.session_state["owned_veggies"]:
+                st.session_state["owned_veggies"].append(veggie)
             st.success(f"{veggie} を購入しました！")
         else:
             st.error("💸 マネーが足りません！")
 
 st.subheader("🧂 調味料を購入")
 for seasoning, price in seasoning_store.items():
-    if st.button(f"{seasoning} を ¥{price} で購入"):
+    if st.button(f"{seasoning} を購入（🪙{price}）マネー"):
         if st.session_state["money"] >= price:
-            st.session_state["seasonings"].append(seasoning)
             st.session_state["money"] -= price
+            if seasoning not in st.session_state["owned_seasonings"]:
+                st.session_state["owned_seasonings"].append(seasoning)
             st.success(f"{seasoning} を購入しました！")
         else:
             st.error("💸 マネーが足りません！")
+
 
 st.markdown("---")
 st.metric("現在の所持金", f"¥{st.session_state['money']}")
