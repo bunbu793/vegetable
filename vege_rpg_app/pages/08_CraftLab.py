@@ -1,4 +1,4 @@
-from streamlit_extras.let_it_rain import raint
+from streamlit_extras.let_it_rain import rain
 import requests
 import streamlit as st
 st.set_page_config(page_title="野菜クラフト工房", page_icon="🧪")
