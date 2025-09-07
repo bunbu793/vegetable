@@ -144,13 +144,13 @@ if st.button("クラフト開始！"):
                 })
 
                 rain(
-                    emozi = "🎆",
+                    emoji = "🎆",
 
                     font_size = 54,
 
                     falling_speed = 5,
                     
-                    animation_length =  10
+                    animation_length = "short"
                 )
         else:
             st.warning("😢 合成失敗…素材はそのまま残ってるよ。次こそリベンジだ！")
