@@ -31,10 +31,16 @@ available_veggies = [
 seasonings = ["なし", "塩", "砂糖", "醤油", "スパイス", "オリーブオイル"]
 
 def load_lottie_url(url):
-    r = requests.get(url)
-    if r.status_code != 200:
+    try:
+        r = requests.get(url)
+        if r.status_code != 200:
+            st.error(f"⚠️ Lottie読み込み失敗（ステータスコード: {r.status_code}）")
+            return None
+        return r.json()
+    except Exception as e:
+        st.error(f"❌ Lottie読み込みエラー: {e}")
         return None
-    return r.json()
+
 
 def show_effects(result_name):
     if result_name == "失敗作":
@@ -49,8 +55,7 @@ def show_effects(result_name):
         """, unsafe_allow_html=True)
 
         # 爆発アニメーション（1回だけ呼び出す）
-        explosion_url = "https://assets10.lottiefiles.com/packages/lf20_VtDDsUbgOD.json"
-        animation_data = load_lottie_url(explosion_url)
+        animation_data = load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_VtDDsUbgOD.json")
         if animation_data:
             st_lottie(animation_data, speed=1, height=400)
 
