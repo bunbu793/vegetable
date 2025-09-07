@@ -1,3 +1,4 @@
+from streamlit_extras.let_it_rain import rain
 import streamlit as st
 st.set_page_config(page_title="野菜クラフト工房", page_icon="🧪")
 
@@ -142,6 +143,14 @@ if st.button("クラフト開始！"):
                     "effect": result["effect"]
                 })
 
-                st.balloons()
+                rain(
+                    emozi = "🎆",
+
+                    font_size = 54,
+
+                    falling_speed = 5,
+                    
+                    animation_length =  10
+                )
         else:
             st.warning("😢 合成失敗…素材はそのまま残ってるよ。次こそリベンジだ！")
