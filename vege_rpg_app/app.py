@@ -194,7 +194,7 @@ if st.session_state.get("authenticated"):
         def generate_mission(vegetable_name, score):
             bonus = 10 + int(score // 20)
             return {
-                "text": f"{vegetable_name}を使って、『{vegetable_name}の料理を作れ！",
+                "text": f"{vegetable_name}を使って、『{recipe}』を作れ！"
                 "bonus": bonus,
                 "recipe": f"{vegetable_name}の定番料理"
             }
