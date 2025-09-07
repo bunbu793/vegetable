@@ -144,7 +144,7 @@ if st.button("クラフト開始！"):
                 })
 
                 rain(
-                    emoji = "🎆",
+                    emoji = "✨",
 
                     font_size = 54,
 
