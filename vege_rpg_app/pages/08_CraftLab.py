@@ -1,4 +1,5 @@
 from streamlit_extras.let_it_rain import rain
+from streamlit_lottie import st_lottie
 import requests
 import streamlit as st
 st.set_page_config(page_title="野菜クラフト工房", page_icon="🧪")
@@ -29,6 +30,12 @@ available_veggies = [
 
 seasonings = ["なし", "塩", "砂糖", "醤油", "スパイス", "オリーブオイル"]
 
+def load_lottie_url(url):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
+
 def show_effects(result_name):
     if result_name == "失敗作":
 
@@ -37,7 +44,7 @@ def show_effects(result_name):
         rain(emoji = "💀", font_size=40, falling_speed = 3, animation_length ="short")
         st.markdown("""
         <style>
-        body {barckground-color:#1a1a1a; color:white;}
+        body {background-color:#1a1a1a; color:white;}
         
         </style>
         """, unsafe_allow_html=True)
@@ -150,6 +157,7 @@ if st.button("クラフト開始！"):
             if consume_veggies(veggie1, veggie2, veggie3) and consume_seasoning(seasoning):
                 st.success(f"🎉 合成成功！{result['name']} を作成したぜ！")
                 st.markdown(f"📝 効果：{result['effect']}")
+                show_effects(result["name"])
 
                 st.session_state["money"] -= CRAFT_COST
                 st.session_state["points"] += result["points"]
