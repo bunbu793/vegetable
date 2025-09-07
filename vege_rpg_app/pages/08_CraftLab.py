@@ -38,12 +38,8 @@ def load_lottie_url(url):
 
 def show_effects(result_name):
     if result_name == "失敗作":
-
-        #===どくろの雨、画面横転===# 
-
-        st.markdown("💀 **クラフト失敗…呪われた気配が漂う…** 💀")
-        rain(emoji = "💥", font_size=40, falling_speed = 3, animation_length ="short")
-        rain(emoji = "💀", font_size=40, falling_speed = 3, animation_length ="short")
+        # 💀ドクロの雨＋魔法アニメーション（暴走演出）
+        rain(emoji="💀", font_size=40, falling_speed=3, animation_length="short")
         st.markdown("""
         <style>
         [data-testid="stAppViewContainer"] {
@@ -52,6 +48,10 @@ def show_effects(result_name):
         }
         </style>
         """, unsafe_allow_html=True)
+
+        # 魔法暴走アニメーション（Lottie）
+        st_lottie(load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_jzq0qoxj.json"), height=400)
+
     elif result_name == "スパイスミラクル":
         # 🎆花火＋🍅雨＋魔法アニメーション
         rain(emoji="🎆", font_size=50, falling_speed=4, animation_length="short")
@@ -176,16 +176,6 @@ if st.button("クラフト開始！"):
                     "seasoning": seasoning,
                     "effect": result["effect"]
                 })
-
-                rain(
-                    emoji = "✨",
-
-                    font_size = 54,
-
-                    falling_speed = 5,
-                    
-                    animation_length = "short"
-                )
         else:
             st.warning("😢 合成失敗…素材はそのまま残ってるよ。次こそリベンジだ！")
             show_effects("失敗作")
