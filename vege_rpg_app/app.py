@@ -177,12 +177,6 @@ if st.session_state.get("authenticated"):
         username = st.session_state.get("username", "player")
         password = st.session_state.get("password", "")
 
-        # ===== アイテムデータ =====
-        items_data = {
-            "スーパートマトジュース": {"説明": "ポイント+5", "必要レベル": 1, "効果": {"points": 5}},
-            "黄金のニンジン": {"説明": "称号獲得率UP", "必要レベル": 3, "効果": {"title_boost": True}},
-            "伝説のカボチャ": {"説明": "ポイント+20", "必要レベル": 5, "効果": {"points": 20}}
-        }
         # === 野菜選択肢 =====
         # 通常野菜（レシピDBにあるもの）
         base_veggies = list(RECIPE_DB.keys())
@@ -194,7 +188,7 @@ if st.session_state.get("authenticated"):
         def generate_mission(vegetable_name, score):
             bonus = 10 + int(score // 20)
             return {
-                "text": f"{vegetable_name}を使って、『{recipe}』を作れ！"
+                "text": f"{vegetable_name}を使って、『{recipe}』を作れ！",
                 "bonus": bonus,
                 "recipe": f"{vegetable_name}の定番料理"
             }
@@ -266,16 +260,6 @@ if st.session_state.get("authenticated"):
             with open(f"user_profiles/{username}.json", "w", encoding="utf-8") as f:
                 json.dump(profile, f, ensure_ascii=False, indent=2)
             st.success("💾 セーブデータを保存しました！")
-
-        # ===== アイテム一覧表示 =====
-        st.subheader("🎁 アイテム一覧")
-        for name, data in items_data.items():
-            if st.session_state["level"] >= data["必要レベル"]:
-                st.write(f"🛒 {name} - {data['説明']}")
-            else:
-                st.write(f"🔒 {name} - {data['必要レベル']}レベルで解放")
-                st.markdown("アイテムは「アイテムショップ」ページで購入できます。")
-
         # ===== 称号獲得チェック =====
         new_titles = check_titles(st.session_state["missions_completed"], st.session_state["titles"])
         for 称号 in new_titles:
