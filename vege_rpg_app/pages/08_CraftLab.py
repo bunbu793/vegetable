@@ -48,25 +48,21 @@ def show_effects(result_name):
         </style>
         """, unsafe_allow_html=True)
 
-        # 🔥 爆発アニメーションのURLを定義
+        # 爆発アニメーション（1回だけ呼び出す）
         explosion_url = "https://assets10.lottiefiles.com/packages/lf20_VtDDsUbgOD.json"
         animation_data = load_lottie_url(explosion_url)
         if animation_data:
-            st_lottie(animation_data, height=400)
+            st_lottie(animation_data, speed=1, height=400)
 
-
+    elif result_name == "スパイスミラクル":
+        rain(emoji="🎆", font_size=50, falling_speed=4, animation_length="short")
+        rain(emoji="🍅", font_size=40, falling_speed=5, animation_length="short")
+        magic_url = "https://assets10.lottiefiles.com/packages/lf20_touohxv0.json"
+        animation_data = load_lottie_url(magic_url)
         if animation_data:
             st_lottie(animation_data, speed=1, height=400)
 
-
-
-    elif result_name == "スパイスミラクル":
-        # 🎆花火＋🍅雨＋魔法アニメーション
-        rain(emoji="🎆", font_size=50, falling_speed=4, animation_length="short")
-        rain(emoji="🍅", font_size=40, falling_speed=5, animation_length="short")
-        st_lottie(load_lottie_url("https://assets10.lottiefiles.com/packages/lf20_touohxv0.json"), height=400)
     else:
-        # 通常成功 → ✨だけ
         rain(emoji="✨", font_size=40, falling_speed=4, animation_length="short")
 
 def consume_veggies(v1, v2, v3):
