@@ -55,7 +55,6 @@ if submitted:
                 "items_owned": profile.get("items_owned", []),
                 "level": profile.get("level", 1),  # ← 追加！
                 "exp": profile.get("exp", 0),      # ← 追加！
-                "rare_veggies_data": profile.get("rare_veggies_data", {})
             })
 
         else:
@@ -63,20 +62,12 @@ if submitted:
     else:
         st.info("🆕 新規ユーザーとして登録されます")
 
-        # ✅ レア野菜データの初期化（profile未定義なので直接定義）
-        rare_veggies_data = {
-            "白いナス": {"説明": "希少なナス。特別ミッションで使用可能", "解放済み": False},
-            "紫色のカリフラワー": {"説明": "ポイントボーナス付き", "解放済み": False},
-            "黄金のトマト": {"説明": "称号獲得率UP", "解放済み": False}
-        }
-
         # ✅ session_state に初期値を設定
         st.session_state.update({
             "authenticated": True,
             "username": username,
             "password": password,
             "titles": [],
-            "rare_veggies_data": rare_veggies_data,
             "missions_completed": [],
             "points": 0,
             "items_owned": [],
@@ -94,8 +85,7 @@ if submitted:
             "items_owned": [],
             "level": 1,
             "exp": 0,
-            "rare_veggies_data": rare_veggies_data
-        }
+            }
 
         os.makedirs("user_profiles", exist_ok=True)
         with open(profile_path, "w", encoding="utf-8") as f:
@@ -107,14 +97,6 @@ if submitted:
 # 認証後の処理
 # ------------------------
 if st.session_state.get("authenticated"):
-    if "rare_unlock_ticket" not in st.session_state:
-        st.session_state["rare_unlock_ticket"] = 0
-    if "rare_veggies_data" not in st.session_state:
-            st.session_state["rare_veggies_data"] = {
-                "白いナス": {"説明": "希少なナス。特別ミッションで使用可能", "解放済み": False},
-                "紫色のカリフラワー": {"説明": "ポイントボーナス付き", "解放済み": False},
-                "黄金のトマト": {"説明": "称号獲得率UP", "解放済み": False}
-            }
     st.header(f"ようこそ、{st.session_state['username']} さん！")
     st.metric("所持ポイント", f"{st.session_state['points']} pt")
 
@@ -209,35 +191,18 @@ if st.session_state.get("authenticated"):
         # 通常野菜（レシピDBにあるもの）
         base_veggies = list(RECIPE_DB.keys())
 
-        # 解放済みのレア野菜だけ抽出
-        rare_veggies_unlocked = [
-            name for name, data in st.session_state["rare_veggies_data"].items()
-            if data.get("解放済み", False)
-        ]
-
-        # 選択肢として表示する野菜一覧
-        available_veggies = base_veggies + rare_veggies_unlocked
-
-
         # ===== 野菜選択UI =====
         vegetable_name = st.selectbox("撮影した野菜を選んでください", available_veggies)
 
         # ===== ミッション生成 =====
         def generate_mission(vegetable_name, score):
-            if vegetable_name in st.session_state["rare_veggies_data"]:
-                bonus = 20 + int(score // 10)  # ゾンビ度に応じてボーナス増加
-                return {
-                    "text": f"🌟 特別ミッション！{vegetable_name}を使って料理を作れ！",
-                    "bonus": bonus,
-                    "recipe": f"{vegetable_name}のスペシャル料理"
-                }
-            else:
-                bonus = 10 + int(score // 20)
-                return {
-                    "text": f"{vegetable_name}を使った料理を作れ！",
-                    "bonus": bonus,
-                    "recipe": f"{vegetable_name}の定番料理"
-                }
+            bonus = 10 + int(score // 20)
+            return {
+                "text": f"{vegetable_name}を使って、『{vegetable_name}の料理を作れ！",
+                "bonus": bonus,
+                "recipe": f"{vegetable_name}の定番料理"
+            }
+
         if score is not None:
             mission_info = generate_mission(vegetable_name, score)
             mission_text = mission_info["text"]
@@ -245,29 +210,6 @@ if st.session_state.get("authenticated"):
 
             st.subheader("🎯 今日のミッション")
             st.markdown(mission_text)
-
-        # ===== レア野菜ミニゲーム =====
-        def rare_veggie_minigame(vegetable_name, base_bonus):
-            st.info(f"🎮 {vegetable_name} 料理シミュレーション開始！")
-
-            method = st.radio("調理法を選ぼう", ["焼く", "煮る", "生で食べる"], key="method")
-            ingredient = st.selectbox("追加食材を選ぼう", ["チーズ", "ベーコン", "はちみつ"], key="ingredient")
-            seasoning = st.radio("味付けを選ぼう", ["塩コショウ", "カレー風味", "甘辛ソース"], key="seasoning")
-
-            if st.button("料理完成！", key="cook_btn"):
-                outcome = random.choice(["大成功！", "まあまあ", "失敗…"])
-                st.success(f"{outcome} {method} {ingredient} {seasoning} の {vegetable_name}料理が完成！")
-
-                bonus = base_bonus
-                if outcome == "大成功！":
-                    bonus += 10
-                    st.balloons()
-
-                st.session_state["points"] += bonus
-                st.success(f"🎁 ボーナス {bonus}pt（合計：{st.session_state['points']}pt）")
-                return bonus
-            return None
-
         # ===== 証拠画像提出 =====
         proof_method = st.radio("証拠画像の取得方法", ["カメラで撮影", "ファイルをアップロード"], key="proof_method")
         if proof_method == "カメラで撮影":
@@ -305,18 +247,6 @@ if st.session_state.get("authenticated"):
                 }
 
                 st.session_state["missions_completed"].append(mission_data)
-
-                # レア野菜ミニゲーム
-                bonus = base_bonus
-                if vegetable_name in st.session_state["rare_veggies_data"]:
-                    result = rare_veggie_minigame(vegetable_name, base_bonus)
-                    if result is not None:
-                        bonus = result
-                else:
-                    st.session_state["points"] += base_bonus
-                    st.success(f"🎁 報酬ポイント +{base_bonus}pt（合計：{st.session_state['points']}pt）")
-                    st.balloons()
-
                 # 経験値加算とレベルアップ処理
                 st.session_state["exp"] += 20  # ミッション達成で経験値+20
 
@@ -335,7 +265,6 @@ if st.session_state.get("authenticated"):
                 "items_owned": st.session_state["items_owned"],
                 "level": st.session_state["level"],        
                 "exp": st.session_state["exp"],           
-                "rare_veggies_data": st.session_state["rare_veggies_data"]
             }
             os.makedirs(os.path.dirname(profile_path), exist_ok=True)
             with open(f"user_profiles/{username}.json", "w", encoding="utf-8") as f:
