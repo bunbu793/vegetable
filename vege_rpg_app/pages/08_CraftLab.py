@@ -41,6 +41,8 @@ def show_effects(result_name):
 
         #===どくろの雨、画面横転===# 
 
+        st.markdown("💀 **クラフト失敗…呪われた気配が漂う…** 💀")
+        rain(emoji = "💥", font_size=40, falling_speed = 3, animation_length ="short")
         rain(emoji = "💀", font_size=40, falling_speed = 3, animation_length ="short")
         st.markdown("""
         <style>
