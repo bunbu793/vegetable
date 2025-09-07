@@ -182,7 +182,10 @@ if st.session_state.get("authenticated"):
         base_veggies = list(RECIPE_DB.keys())
 
         # ===== 野菜選択UI =====
+        available_veggies = base_veggies
         vegetable_name = st.selectbox("撮影した野菜を選んでください", available_veggies)
+
+        recipe = RECIPE_DB.get(vegetable_name, f"{vegetable_name}の定番料理")
 
         # ===== ミッション生成 =====
         def generate_mission(vegetable_name, score):
@@ -294,8 +297,8 @@ if st.session_state.get("authenticated"):
         # 過去のミッション履歴表示
         if st.session_state["missions_completed"]:
             st.subheader("📜 過去のミッション達成履歴")
-        for m in st.session_state["missions_completed"]:
-            st.markdown(f"{m['vegetable']} → {m['recipe']}（ゾンビ度：{m['zombie_score']}%）")
-            if m.get("proof_path") and os.path.exists(m["proof_path"]):
-                st.image(m["proof_path"], caption="証拠画像", width=200)
+            for m in st.session_state["missions_completed"]:
+                st.markdown(f"{m['vegetable']} → {m['recipe']}（ゾンビ度：{m['zombie_score']}%）")
+                if m.get("proof_path") and os.path.exists(m["proof_path"]):
+                    st.image(m["proof_path"], caption="証拠画像", width=200)
 
