@@ -113,12 +113,15 @@ if st.session_state.get("authenticated"):
     # 画像取得方法の選択
     input_method = st.radio("写真の取得方法を選んでください", ["カメラで撮影", "ファイルをアップロード"])
 
-    # 画像取得
-    input_container = st.empty()
+    camera_container = st.container()
+    upload_container = st.container()
+
     if input_method == "カメラで撮影":
-        image_bytes = input_container.camera_input("野菜の写真を撮ってください", key="camera_input")
+        with camera_container:
+            image_bytes = st.camera_input("野菜の写真を撮ってください", key="camera_input")
     else:
-        image_bytes = input_container.file_uploader("野菜の写真をアップロードしてください", type=["png", "jpg", "jpeg"], key="file_uploader")
+        with upload_container:
+            image_bytes = st.file_uploader("野菜の写真をアップロードしてください", type=["png", "jpg", "jpeg"], key="file_uploader")
 
     # ゾンビ度計算関数
     def calculate_zombie_score(image_bytes):
