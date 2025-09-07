@@ -22,28 +22,22 @@ def get_period_ranking(period="week"):
 
     for entry in history:
         ts = datetime.strptime(entry["timestamp"], "%Y-%m-%d %H:%M:%S")
-        if period == "week" and ts.isocalendar()[1] == now.isocalendar()[1] and ts.year == now.year:
+        if period == "day" and ts.date() == now.date():
+            filtered.append(entry)
+        elif period == "week" and ts.isocalendar()[1] == now.isocalendar()[1] and ts.year == now.year:
             filtered.append(entry)
         elif period == "month" and ts.month == now.month and ts.year == now.year:
             filtered.append(entry)
-
+        elif period == "year" and ts.year == now.year:
+            filtered.append(entry)
+    
+    # ユーザーごとの最新ポイントを集計
     ranking = {}
     for entry in filtered:
-        ranking[entry["username"]] = entry["points"]
+        ranking[entry["username"]] = ranking.get(entry["username"], 0) + entry["points"]
+
     return sorted(ranking.items(), key=lambda x: x[1], reverse=True)
 
-# 通常ランキング（最新ポイント）
-def load_all_profiles():
-    profiles = []
-    for filename in os.listdir("user_profiles"):
-        if filename.endswith(".json"):
-            with open(os.path.join("user_profiles", filename), "r", encoding="utf-8") as f:
-                data = json.load(f)
-                profiles.append({
-                    "username": data.get("username", "unknown"),
-                    "points": data.get("points", 0)
-                })
-    return sorted(profiles, key=lambda x: x["points"], reverse=True)
 
 # 表示関数
 def show_ranking(title, ranking, current_user):
@@ -61,5 +55,7 @@ def show_ranking(title, ranking, current_user):
 # 実行
 current_user = st.session_state.get("username", "")
 
+show_ranking("📅 今日のランキング", get_period_ranking("day"), current_user )
 show_ranking("📅 今週のランキング", get_period_ranking("week"), current_user)
 show_ranking("🗓️ 今月のランキング", get_period_ranking("month"), current_user)
+show_ranking("📆 今年のランキング", get_period_ranking("year"), current_user)
