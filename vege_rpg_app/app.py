@@ -204,6 +204,10 @@ if st.session_state.get("authenticated"):
         if score is not None and "mission_info" not in st.session_state:
             st.session_state["mission_info"] = generate_mission(vegetable_name, score)
 
+        if st.button("🔄 ミッションを再生成"):
+            st.session_state.pop("mission_info", None)
+            st.experimental_rerun()
+
         # ミッション表示
         if "mission_info" in st.session_state:
             mission_text = st.session_state["mission_info"]["text"]
