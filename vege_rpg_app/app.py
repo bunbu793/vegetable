@@ -187,8 +187,6 @@ if st.session_state.get("authenticated"):
         available_veggies = base_veggies
         vegetable_name = st.selectbox("撮影した野菜を選んでください", available_veggies)
 
-        recipe = RECIPE_DB.get(vegetable_name, f"{vegetable_name}の定番料理")
-
         # ===== ミッション生成 =====
         def generate_mission(vegetable_name, score):
             bonus = 10 + int(score // 20)
@@ -206,7 +204,6 @@ if st.session_state.get("authenticated"):
 
         if st.button("🔄 ミッションを再生成"):
             st.session_state.pop("mission_info", None)
-            st.experimental_rerun()
 
         # ミッション表示
         if "mission_info" in st.session_state:
