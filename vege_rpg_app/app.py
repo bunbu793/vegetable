@@ -200,10 +200,14 @@ if st.session_state.get("authenticated"):
                 "recipe": recipe
             }
 
-        if score is not None:
-            mission_info = generate_mission(vegetable_name, score)
-            mission_text = mission_info["text"]
-            base_bonus = mission_info["bonus"]
+        # ミッションを一度だけ生成
+        if score is not None and "mission_info" not in st.session_state:
+            st.session_state["mission_info"] = generate_mission(vegetable_name, score)
+
+        # ミッション表示
+        if "mission_info" in st.session_state:
+            mission_text = st.session_state["mission_info"]["text"]
+            base_bonus = st.session_state["mission_info"]["bonus"]
 
             st.subheader("🎯 今日のミッション")
             st.markdown(mission_text)
