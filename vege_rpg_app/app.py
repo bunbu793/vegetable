@@ -116,12 +116,13 @@ if st.session_state.get("authenticated"):
     camera_container = st.container()
     upload_container = st.container()
 
-    image_container = st.empty()
-
-    if input_method == "カメラで撮影":
-        image_bytes = image_container.camera_input("野菜の写真を撮ってください", key="main_camera")
-    else:
-        image_bytes = image_container.file_uploader("野菜の写真をアップロードしてください", type=["png", "jpg", "jpeg"], key="main_uploader")
+    image_container = st.container()  # empty ではなく container
+    with image_container:
+        if input_method == "カメラで撮影":
+            image_bytes = st.camera_input("野菜の写真を撮ってください", key="main_camera")
+        else:
+            image_bytes = st.file_uploader("野菜の写真をアップロードしてください", type=["png","jpg","jpeg"], key="main_uploader")
+        
     # ゾンビ度計算関数
     def calculate_zombie_score(image_bytes):
         img = Image.open(image_bytes)
