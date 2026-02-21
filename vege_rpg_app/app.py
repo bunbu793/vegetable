@@ -142,6 +142,14 @@ if st.session_state.get("authenticated"):
 
         score = st.session_state["fixed_score"]
 
+        # === 野菜選択肢 =====
+        # 通常野菜（レシピDBにあるもの）
+        base_veggies = list(RECIPE_DB.keys())
+
+        # ===== 野菜選択UI =====
+        available_veggies = base_veggies
+        vegetable_name = st.selectbox("撮影した野菜を選んでください", available_veggies)
+
 
         # 腐敗防止スプレー使用
         if "腐敗防止スプレー" in st.session_state["items_owned"]:
@@ -149,6 +157,28 @@ if st.session_state.get("authenticated"):
                 score = max(score - 10, 0)
                 st.success("腐敗防止スプレーを使用！ゾンビ度が10%下がりました")
                 st.session_state["items_owned"].remove("腐敗防止スプレー")
+            
+        # ミッションチェンジャー
+        if "ミッションチェンジャー" in st.session_state["items_owned"]:
+            if st.button("🌀 ミッションチェンジャーを使う"):
+                st.session_state["mission_info"] = generate_mission(vegetable_name, score)
+                st.success("ミッションを新しいものに変更しました！")
+                st.session_state["items_owned"].remove("ミッションチェンジャー")
+
+        # ボーナスタイムカード
+        if "ボーナスタイムカード" in st.session_state["items_owned"]:
+            if st.button("⚡ ボーナスタイムカードを使う"):
+                st.session_state["bonus_multiplier"] = 1.5
+                st.success("次回のポイント獲得が1.5倍になります！")
+                st.session_state["items_owned"].remove("ボーナスタイムカード")
+
+        # スーパー肥料
+        if "スーパー肥料" in st.session_state["items_owned"]:
+            if st.button("🌱 スーパー肥料を使う"):
+                decrease = random.randint(5,15)
+                score = max(score - decrease, 0)
+                st.success(f"ゾンビ度が {decrease}% 下がりました！")
+                st.session_state["items_owned"].remove("スーパー肥料")
 
         # 診断結果表示
         st.image(image_bytes, caption="診断対象の野菜", use_container_width=True)
@@ -189,14 +219,6 @@ if st.session_state.get("authenticated"):
 
         username = st.session_state.get("username", "player")
         password = st.session_state.get("password", "")
-
-        # === 野菜選択肢 =====
-        # 通常野菜（レシピDBにあるもの）
-        base_veggies = list(RECIPE_DB.keys())
-
-        # ===== 野菜選択UI =====
-        available_veggies = base_veggies
-        vegetable_name = st.selectbox("撮影した野菜を選んでください", available_veggies)
 
         # ===== ミッション生成 =====
         def generate_mission(vegetable_name, score):
