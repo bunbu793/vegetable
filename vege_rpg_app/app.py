@@ -132,7 +132,16 @@ if st.session_state.get("authenticated"):
         return round(zombie_ratio * 100, 1)
 
     if image_bytes:
-        score = calculate_zombie_score(image_bytes)
+        # 画像が変わったらリセット
+        if st.session_state.get("last_image") != image_bytes:
+            st.session_state.pop("fixed_score", None)
+            st.session_state.pop("mission_info", None)
+            st.session_state["last_image"] = image_bytes
+        if "fixed_score" not in st.session_state:
+            st.session_state["fixed_score"] = calculate_zombie_score(image_bytes)
+
+        score = st.session_state["fixed_score"]
+
 
         # 腐敗防止スプレー使用
         if "腐敗防止スプレー" in st.session_state["items_owned"]:
@@ -201,7 +210,16 @@ if st.session_state.get("authenticated"):
             }
 
         # ミッションを一度だけ生成
-        if score is not None and st.session_state["mission_info"] is None:
+        # ===== ミッション生成（B仕様：1回の診断中は固定）=====
+
+        # fixed_scoreがなければ作る（＝最初の撮影）
+        if "fixed_score" not in st.session_state:
+            st.session_state["fixed_score"] = score
+
+        score = st.session_state["fixed_score"]
+
+        # ミッションはまだ無ければ生成
+        if st.session_state.get("mission_info") is None:
             st.session_state["mission_info"] = generate_mission(vegetable_name, score)
 
         # ミッション表示
@@ -220,99 +238,103 @@ if st.session_state.get("authenticated"):
         else:
             proof_image = proof_container.file_uploader("証拠写真をアップロードしてください", type=["png", "jpg", "jpeg"], key="proof_uploader")
 
-# ===== ミッション達成処理 =====
-if st.button("✅ ミッション達成！"):
-    if vegetable_name and score is not None:
+        # ===== ミッション達成処理 =====
+        if st.button("✅ ミッション達成！"):
+            if vegetable_name and score is not None:
 
-        # ⭐ ここを修正！
-        mission_info = st.session_state["mission_info"]
-        recipe = mission_info["recipe"]
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                # ⭐ ここを修正！
+                mission_info = st.session_state["mission_info"]
+                recipe = mission_info["recipe"]
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # ⭐ ポイント加算
-        st.session_state["points"] += mission_info["bonus"]
-        st.success(f"🎉 {mission_info['bonus']} ポイント獲得！")
+                # ⭐ ポイント加算
+                st.session_state["points"] += mission_info["bonus"]
+                st.success(f"🎉 {mission_info['bonus']} ポイント獲得！")
 
-        # 証拠画像保存
-        proof_path = None
-        if proof_image:
-            proof_dir = f"user_profiles/{username}_proofs"
-            os.makedirs(proof_dir, exist_ok=True)
-            proof_path = os.path.join(
-                proof_dir,
-                f"{vegetable_name}_{score}_{timestamp}.jpg"
-            )
-            with open(proof_path, "wb") as f:
-                f.write(proof_image.getbuffer())
-            st.success("📸 証拠画像を保存しました！")
+                # 証拠画像保存
+                proof_path = None
+                if proof_image:
+                    proof_dir = f"user_profiles/{username}_proofs"
+                    os.makedirs(proof_dir, exist_ok=True)
+                    proof_path = os.path.join(
+                        proof_dir,
+                        f"{vegetable_name}_{score}_{timestamp}.jpg"
+                    )
+                    with open(proof_path, "wb") as f:
+                        f.write(proof_image.getbuffer())
+                    st.success("📸 証拠画像を保存しました！")
 
-        # ミッション履歴保存
-        mission_data = {
-            "vegetable": vegetable_name,
-            "zombie_score": score,
-            "recipe": recipe,
-            "timestamp": timestamp,
-            "proof_path": proof_path
-        }
-        st.session_state["missions_completed"].append(mission_data)
+                # ミッション履歴保存
+                mission_data = {
+                    "vegetable": vegetable_name,
+                    "zombie_score": score,
+                    "recipe": recipe,
+                    "timestamp": timestamp,
+                    "proof_path": proof_path
+                }
+                st.session_state["missions_completed"].append(mission_data)
 
-        # 経験値
-        st.session_state["exp"] += 20
-        while st.session_state["exp"] >= 100:
-            st.session_state["exp"] -= 100
-            st.session_state["level"] += 1
-            st.success(f"🎉 レベルアップ！Lv.{st.session_state['level']} になりました！")
-            # セーブデータ保存
-            profile_path = f"user_profiles/{username}.json"
-            profile = {
-                "username": username,
-                "password": password,
-                "titles": st.session_state["titles"],
-                "missions_completed": st.session_state["missions_completed"],
-                "points": st.session_state["points"],
-                "items_owned": st.session_state["items_owned"],
-                "level": st.session_state["level"],        
-                "exp": st.session_state["exp"],           
-            }
-            os.makedirs(os.path.dirname(profile_path), exist_ok=True)
-            with open(f"user_profiles/{username}.json", "w", encoding="utf-8") as f:
-                json.dump(profile, f, ensure_ascii=False, indent=2)
-            st.success("💾 セーブデータを保存しました！")
-        # ===== 称号獲得チェック =====
-        new_titles = check_titles(st.session_state["missions_completed"], st.session_state["titles"])
-        for 称号 in new_titles:
-            進化元 = None
-            for t, data in 称号データ.items():
-                if data.get("進化先") == 称号 and t in st.session_state["titles"]:
-                    進化元 = t
-                    st.session_state["titles"].remove(t)
-                    break
-            st.session_state["titles"].append(称号)
+                # 経験値
+                st.session_state["exp"] += 20
+                while st.session_state["exp"] >= 100:
+                    st.session_state["exp"] -= 100
+                    st.session_state["level"] += 1
+                    st.success(f"🎉 レベルアップ！Lv.{st.session_state['level']} になりました！")
+                    # セーブデータ保存
+                    profile_path = f"user_profiles/{username}.json"
+                    profile = {
+                        "username": username,
+                        "password": password,
+                        "titles": st.session_state["titles"],
+                        "missions_completed": st.session_state["missions_completed"],
+                        "points": st.session_state["points"],
+                        "items_owned": st.session_state["items_owned"],
+                        "level": st.session_state["level"],        
+                        "exp": st.session_state["exp"],           
+                    }
+                    os.makedirs(os.path.dirname(profile_path), exist_ok=True)
+                    with open(f"user_profiles/{username}.json", "w", encoding="utf-8") as f:
+                        json.dump(profile, f, ensure_ascii=False, indent=2)
+                    st.success("💾 セーブデータを保存しました！")
+                # ===== 称号獲得チェック =====
+                new_titles = check_titles(st.session_state["missions_completed"], st.session_state["titles"])
+                for 称号 in new_titles:
+                    進化元 = None
+                    for t, data in 称号データ.items():
+                        if data.get("進化先") == 称号 and t in st.session_state["titles"]:
+                            進化元 = t
+                            st.session_state["titles"].remove(t)
+                            break
+                    st.session_state["titles"].append(称号)
 
-            if 進化元:
-                st.markdown(f"""
-                <div style="text-align:center; font-size:28px; color:gold;">
-                🌟 称号進化！<br><br>
-                <span style="font-size:24px;">{進化元} → <strong>{称号}</strong></span>
-                </div>
-                """, unsafe_allow_html=True)
-                st.balloons()
-                old_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[進化元]['画像ファイル名']}"
-                new_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[称号]['画像ファイル名']}"
-                st.image(old_url, caption=f"旧称号：{進化元}", width=120)
-                st.image(new_url, caption=f"新称号：{称号}", width=150)
-                st.markdown(f"📝 {称号データ[称号]['説明']}")
-            else:
-                st.success(f"🏆 称号獲得：{称号}")
-                st.markdown(称号データ[称号]["説明"])
-                image_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[称号]['画像ファイル名']}"
-                st.image(image_url, width=150)
-                st.balloons()
+                    if 進化元:
+                        st.markdown(f"""
+                        <div style="text-align:center; font-size:28px; color:gold;">
+                        🌟 称号進化！<br><br>
+                        <span style="font-size:24px;">{進化元} → <strong>{称号}</strong></span>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        st.balloons()
+                        old_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[進化元]['画像ファイル名']}"
+                        new_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[称号]['画像ファイル名']}"
+                        st.image(old_url, caption=f"旧称号：{進化元}", width=120)
+                        st.image(new_url, caption=f"新称号：{称号}", width=150)
+                        st.markdown(f"📝 {称号データ[称号]['説明']}")
+                    else:
+                        st.success(f"🏆 称号獲得：{称号}")
+                        st.markdown(称号データ[称号]["説明"])
+                        image_url = f"https://raw.githubusercontent.com/bunbu793/vegetable/main/vege_rpg_app/assets/images/titles/{称号データ[称号]['画像ファイル名']}"
+                        st.image(image_url, width=150)
+                        st.balloons()
 
-        # 過去のミッション履歴表示
-        if st.session_state["missions_completed"]:
-            st.subheader("📜 過去のミッション達成履歴")
-            for m in st.session_state["missions_completed"]:
-                st.markdown(f"{m['vegetable']} → {m['recipe']}（ゾンビ度：{m['zombie_score']}%）")
-                if m.get("proof_path") and os.path.exists(m["proof_path"]):
-                    st.image(m["proof_path"], caption="証拠画像", width=200)
+                # 過去のミッション履歴表示
+                if st.session_state["missions_completed"]:
+                    st.subheader("📜 過去のミッション達成履歴")
+                    for m in st.session_state["missions_completed"]:
+                        st.markdown(f"{m['vegetable']} → {m['recipe']}（ゾンビ度：{m['zombie_score']}%）")
+                        if m.get("proof_path") and os.path.exists(m["proof_path"]):
+                            st.image(m["proof_path"], caption="証拠画像", width=200)
+
+                # 次の診断用にリセット
+                st.session_state.pop("mission_info", None)
+                st.session_state.pop("fixed_score", None)
