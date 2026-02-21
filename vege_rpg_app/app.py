@@ -212,55 +212,56 @@ if st.session_state.get("authenticated"):
             st.subheader("🎯 今日のミッション")
             st.markdown(mission_text)
         # ===== 証拠画像提出 =====
+        proof_container = st.container()
         proof_method = st.radio("証拠画像の取得方法", ["カメラで撮影", "ファイルをアップロード"], key="proof_method")
-        proof_container = st.empty()
 
         if proof_method == "カメラで撮影":
             proof_image = proof_container.camera_input("証拠写真を撮影してください", key="proof_camera")
         else:
             proof_image = proof_container.file_uploader("証拠写真をアップロードしてください", type=["png", "jpg", "jpeg"], key="proof_uploader")
 
-        # ===== ミッション達成処理 =====
-        if st.button("✅ ミッション達成！"):
-            if vegetable_name and score is not None:
-                mission_info = st.session_state["mission_info"]
-                recipe = mission_info["recipe"]
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+# ===== ミッション達成処理 =====
+if st.button("✅ ミッション達成！"):
+    if vegetable_name and score is not None:
 
-                # ⭐ ポイント加算
-                st.session_state["points"] += mission_info["bonus"]
-                st.success(f"🎉 {mission_info['bonus']} ポイント獲得！")
+        # ⭐ ここを修正！
+        mission_info = st.session_state["mission_info"]
+        recipe = mission_info["recipe"]
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                # ✅ ここで証拠画像保存と proof_path の定義をする
-                proof_path = None  # 初期化しておくと安全
-                if proof_image:
-                    proof_dir = f"user_profiles/{username}_proofs"
-                    os.makedirs(proof_dir, exist_ok=True)
-                    proof_path = os.path.join(
-                        proof_dir,
-                        f"{vegetable_name}_{score}_{timestamp}.jpg"
-                    )
-                    with open(proof_path, "wb") as f:
-                        f.write(proof_image.getbuffer())
-                    st.success("📸 証拠画像を保存しました！")
+        # ⭐ ポイント加算
+        st.session_state["points"] += mission_info["bonus"]
+        st.success(f"🎉 {mission_info['bonus']} ポイント獲得！")
 
-                # ✅ そのあとで mission_data を作成する
-                mission_data = {
-                    "vegetable": vegetable_name,
-                    "zombie_score": score,
-                    "recipe": recipe,
-                    "timestamp": timestamp,
-                    "proof_path": proof_path
-                }
+        # 証拠画像保存
+        proof_path = None
+        if proof_image:
+            proof_dir = f"user_profiles/{username}_proofs"
+            os.makedirs(proof_dir, exist_ok=True)
+            proof_path = os.path.join(
+                proof_dir,
+                f"{vegetable_name}_{score}_{timestamp}.jpg"
+            )
+            with open(proof_path, "wb") as f:
+                f.write(proof_image.getbuffer())
+            st.success("📸 証拠画像を保存しました！")
 
-                st.session_state["missions_completed"].append(mission_data)
-                # 経験値加算とレベルアップ処理
-                st.session_state["exp"] += 20  # ミッション達成で経験値+20
+        # ミッション履歴保存
+        mission_data = {
+            "vegetable": vegetable_name,
+            "zombie_score": score,
+            "recipe": recipe,
+            "timestamp": timestamp,
+            "proof_path": proof_path
+        }
+        st.session_state["missions_completed"].append(mission_data)
 
-                while st.session_state["exp"] >= 100:
-                    st.session_state["exp"] -= 100
-                    st.session_state["level"] += 1
-                    st.success(f"🎉 レベルアップ！Lv.{st.session_state['level']} になりました！")
+        # 経験値
+        st.session_state["exp"] += 20
+        while st.session_state["exp"] >= 100:
+            st.session_state["exp"] -= 100
+            st.session_state["level"] += 1
+            st.success(f"🎉 レベルアップ！Lv.{st.session_state['level']} になりました！")
             # セーブデータ保存
             profile_path = f"user_profiles/{username}.json"
             profile = {
