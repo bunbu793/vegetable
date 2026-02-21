@@ -175,6 +175,8 @@ if st.session_state.get("authenticated"):
         }.items():
             if k not in st.session_state:
                 st.session_state[k] = v
+        if "mission_info" not in st.session_state:
+            st.session_state["mission_info"] = None
 
         username = st.session_state.get("username", "player")
         password = st.session_state.get("password", "")
@@ -199,7 +201,7 @@ if st.session_state.get("authenticated"):
             }
 
         # ミッションを一度だけ生成
-        if score is not None and "mission_info" not in st.session_state:
+        if score is not None and st.session_state["mission_info"] is None:
             st.session_state["mission_info"] = generate_mission(vegetable_name, score)
 
         # ミッション表示
@@ -221,9 +223,13 @@ if st.session_state.get("authenticated"):
         # ===== ミッション達成処理 =====
         if st.button("✅ ミッション達成！"):
             if vegetable_name and score is not None:
-                mission_info = generate_mission(vegetable_name, score)
+                mission_info = st.session_state["mission_info"]
                 recipe = mission_info["recipe"]
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                # ⭐ ポイント加算
+                st.session_state["points"] += mission_info["bonus"]
+                st.success(f"🎉 {mission_info['bonus']} ポイント獲得！")
 
                 # ✅ ここで証拠画像保存と proof_path の定義をする
                 proof_path = None  # 初期化しておくと安全
@@ -309,4 +315,3 @@ if st.session_state.get("authenticated"):
                 st.markdown(f"{m['vegetable']} → {m['recipe']}（ゾンビ度：{m['zombie_score']}%）")
                 if m.get("proof_path") and os.path.exists(m["proof_path"]):
                     st.image(m["proof_path"], caption="証拠画像", width=200)
-
